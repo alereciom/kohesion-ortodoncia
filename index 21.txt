@@ -1,13 +1,1 @@
 
-Kohesión Dental · Ortodoncia
-
-⚙ Configuración
-Dashboard
-Pacientes activos
-Mensualidades
-Incompletos
-Retención
-KPIs del mes
-Importar reporte
-Cargando...
-
