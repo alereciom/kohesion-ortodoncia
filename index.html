@@ -716,7 +716,13 @@ async function loadDashboard() {
 
     const carteraTotal = activos.reduce((s,p)=>s+p.total,0);
     const ingMens = activos.filter(p=>p.tipo_pago==='mensual').reduce((s,p)=>s+(p.mensualidad||0),0);
-    const anticiposPendientes = activos.filter(p=>p.estado_pago==='pendiente').reduce((s,p)=>s+(p.tipo_pago==='contado'?p.total:p.tipo_pago==='contado2'?p.total:(p.anticipo||0)),0);
+    const deudaInicial = activos.filter(p=>p.estado_pago==='pendiente').reduce((s,p)=>s+(p.tipo_pago==='contado'?p.total:p.tipo_pago==='contado2'?p.total:(p.anticipo||0)),0);
+    // Mensualidades vencidas = lo que deberían haber pagado hasta hoy menos lo cobrado
+    const mensVencidas = activos.filter(p=>p.tipo_pago==='mensual'&&p.estado_pago==='pagado').reduce((s,p)=>{
+      const cobrado=p.total_cobrado||0;
+      const esp=pagosEsperados(p);
+      return s + Math.max(0, esp - cobrado);
+    },0);
     const mesHoy = today().slice(0,7);
     // Contratos = todos los pacientes (activos + retención) con fecha_inicio este mes
     const contratosEsteMes = all.filter(p=>p.fecha_inicio&&p.fecha_inicio.slice(0,7)===mesHoy&&p.status!=='incompleto').length;
@@ -741,8 +747,9 @@ async function loadDashboard() {
       <div class="mc" onclick="document.querySelectorAll('.nav-btn')[4].click()"><div class="mc-label">Retención</div><div class="mc-value c-teal">${retencion.length}</div><div class="mc-sub">graduados</div></div>
       <div class="mc" onclick="goContratos()"><div class="mc-label">Contratos este mes</div><div class="mc-value c-green">${contratosEsteMes}</div><div class="mc-sub">iniciaron tratamiento</div></div>
       <div class="mc"><div class="mc-label">Cartera contratada</div><div class="mc-value c-blue" style="font-size:16px">${fmt(carteraTotal)}</div><div class="mc-sub">valor total del pool activo</div></div>
-      <div class="mc"><div class="mc-label">Ingreso mensual esperado</div><div class="mc-value c-green" style="font-size:16px">${fmt(ingMens)}</div><div class="mc-sub">suma de mensualidades</div></div>
-      <div class="mc"><div class="mc-label">Anticipos pendientes</div><div class="mc-value c-amber" style="font-size:16px">${fmt(anticiposPendientes)}</div><div class="mc-sub">por cobrar al inicio</div></div>
+      <div class="mc" onclick="document.querySelectorAll('.nav-btn')[2].click()" style="cursor:pointer"><div class="mc-label">Ingreso mensual esperado</div><div class="mc-value c-green" style="font-size:16px">${fmt(ingMens)}</div><div class="mc-sub">suma de mensualidades</div></div>
+      <div class="mc" onclick="goAnticipos()" style="cursor:pointer"><div class="mc-label">Deuda inicial pendiente</div><div class="mc-value c-amber" style="font-size:16px">${fmt(deudaInicial)}</div><div class="mc-sub">sin primer pago</div></div>
+      <div class="mc" onclick="goSeg('deudor')" style="cursor:pointer"><div class="mc-label">Mensualidades vencidas</div><div class="mc-value c-red" style="font-size:16px">${fmt(mensVencidas)}</div><div class="mc-sub">atraso acumulado</div></div>
     `;
 
     // Charts
@@ -845,6 +852,33 @@ function renderDashCharts(activos, incompletos) {
       }).join('')}
     </div>
   `;
+}
+
+function goAnticipos() {
+  document.querySelectorAll('.nav-btn')[1].click();
+  setTimeout(()=>{
+    document.getElementById('f-segmento').value='';
+    document.getElementById('f-tipo').value='';
+    document.getElementById('f-apar').value='';
+    document.getElementById('s-activos').value='';
+    searches.activos='';
+    pages.activos=1;
+    loadActivosPendientes();
+  },50);
+}
+
+async function loadActivosPendientes() {
+  document.getElementById('tbl-activos').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
+  try {
+    const data = await sb('GET','v_resumen?status=eq.activo&estado_pago=eq.pendiente&order=apellido_paterno.asc');
+    if(!data.length){
+      document.getElementById('tbl-activos').innerHTML='<div class="empty"><div class="empty-icon">✅</div>No hay anticipos pendientes.</div>';
+      document.getElementById('pag-activos').innerHTML='';
+      return;
+    }
+    renderTablaActivos(data);
+    document.getElementById('pag-activos').innerHTML=`<span style="color:var(--text3);font-size:12px">Deuda inicial pendiente — ${data.length} pacientes · ${fmt(data.reduce((s,p)=>s+(p.tipo_pago==='contado'?p.total:p.tipo_pago==='contado2'?p.total:(p.anticipo||0)),0))}</span>`;
+  } catch(e){ document.getElementById('tbl-activos').innerHTML=`<div class="empty">Error: ${e.message}</div>`; }
 }
 
 function goContratos() {
@@ -1473,6 +1507,10 @@ async function loadKPIs() {
     const ingresosEsperados = activos.filter(p=>p.tipo_pago==='mensual').reduce((s,p)=>s+(p.mensualidad||0),0);
     const carteraTotal = activos.reduce((s,p)=>s+p.total,0);
     const anticiposPend = activos.filter(p=>p.estado_pago==='pendiente').reduce((s,p)=>s+(p.tipo_pago==='contado'?p.total:p.tipo_pago==='contado2'?p.total:(p.anticipo||0)),0);
+    const mensVencidasKPI = activos.filter(p=>p.tipo_pago==='mensual'&&p.estado_pago==='pagado').reduce((s,p)=>{
+      const cobrado=p.total_cobrado||0; const esp=pagosEsperados(p);
+      return s+Math.max(0,esp-cobrado);
+    },0);
 
     // Segmentos
     const segs={sano:0,pendiente_inicio:0,sin_iniciar:0,reagendar:0,reagendado:0,deudor:0,atrasado:0,critico:0,fantasma:0,pronto:0,vencido:0};
@@ -1518,7 +1556,8 @@ async function loadKPIs() {
           <div class="kpi-row"><span class="kpi-label">Anticipos cobrados</span><span class="kpi-val green">${fmt(anticiposCobrados)}</span></div>
           <div class="kpi-row"><span class="kpi-label">Anticipos pendientes</span><span class="kpi-val amber">${fmt(anticiposPendientes)}</span></div>
           <div class="kpi-row"><span class="kpi-label">Cartera contratada</span><span class="kpi-val blue">${fmt(carteraTotal)}</span></div>
-          <div class="kpi-row"><span class="kpi-label">Anticipos pendientes</span><span class="kpi-val amber">${fmt(anticiposPend)}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Deuda inicial pendiente</span><span class="kpi-val amber">${fmt(anticiposPend)}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Mensualidades vencidas</span><span class="kpi-val red">${fmt(mensVencidasKPI)}</span></div>
         </div>
 
         <div class="kpi-card">
