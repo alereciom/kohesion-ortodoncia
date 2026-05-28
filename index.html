@@ -718,7 +718,7 @@ async function loadDashboard() {
     const ingMens = activos.filter(p=>p.tipo_pago==='mensual').reduce((s,p)=>s+(p.mensualidad||0),0);
     const mesHoy = today().slice(0,7);
     // Contratos = todos los pacientes (activos + retención) con fecha_inicio este mes
-    const contratosEsteMes = allPac.filter(p=>p.fecha_inicio&&p.fecha_inicio.slice(0,7)===mesHoy&&p.status!=='incompleto').length;
+    const contratosEsteMes = all.filter(p=>p.fecha_inicio&&p.fecha_inicio.slice(0,7)===mesHoy&&p.status!=='incompleto').length;
     // Dashboard mes selector
     const dashMesLabel = new Date(mesHoy+'-01').toLocaleDateString('es-MX',{month:'long',year:'numeric'});
 
