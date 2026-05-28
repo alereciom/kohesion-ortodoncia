@@ -361,6 +361,14 @@ tr.row-incomplete td:first-child{color:var(--text);}
 
 <!-- KPIs -->
 <div id="page-kpis" style="display:none">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem;flex-wrap:wrap">
+    <div style="font-size:14px;font-weight:500;color:var(--text)">KPIs del mes</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button class="btn btn-ghost btn-icon" onclick="cambiarMesKPI(-1)">←</button>
+      <span id="kpi-mes-label" style="font-size:13px;font-weight:500;color:var(--text);min-width:120px;text-align:center"></span>
+      <button class="btn btn-ghost btn-icon" id="kpi-mes-next" onclick="cambiarMesKPI(1)">→</button>
+    </div>
+  </div>
   <div id="kpi-content"><div class="loading"><span class="spin"></span>Cargando KPIs...</div></div>
 </div>
 
@@ -685,7 +693,7 @@ function setPage(page,el) {
   if(page==='mensualidades') loadMens();
   if(page==='incompletos') loadInc();
   if(page==='retencion') loadRet();
-  if(page==='kpis') loadKPIs();
+  if(page==='kpis') { initKpiMes(); loadKPIs(); }
   if(page==='importar') loadReagendar();
 }
 
@@ -705,7 +713,10 @@ async function loadDashboard() {
     const cartera = activos.reduce((s,p)=>s+saldo(p),0);
     const ingMens = activos.filter(p=>p.tipo_pago==='mensual').reduce((s,p)=>s+(p.mensualidad||0),0);
     const mesHoy = today().slice(0,7);
-    const contratosEsteMes = activos.filter(p=>p.fecha_inicio&&p.fecha_inicio.slice(0,7)===mesHoy).length;
+    // Contratos = todos los pacientes (activos + retención) con fecha_inicio este mes
+    const contratosEsteMes = allPac.filter(p=>p.fecha_inicio&&p.fecha_inicio.slice(0,7)===mesHoy&&p.status!=='incompleto').length;
+    // Dashboard mes selector
+    const dashMesLabel = new Date(mesHoy+'-01').toLocaleDateString('es-MX',{month:'long',year:'numeric'});
 
     // Metrics row
     document.getElementById('dash-metrics').innerHTML = `
@@ -721,8 +732,8 @@ async function loadDashboard() {
       <div class="mc" onclick="goSeg('sin_iniciar')"><div class="mc-label">Sin iniciar</div><div class="mc-value c-amber">${segs.sin_iniciar}</div><div class="mc-sub">+14 días sin primera cita</div></div>
       <div class="mc" onclick="goSeg('pronto')"><div class="mc-label">Terminan pronto</div><div class="mc-value c-teal">${segs.pronto}</div><div class="mc-sub">≤2 meses restantes</div></div>
       <div class="mc" onclick="goSeg('vencido')"><div class="mc-label">Vencidos</div><div class="mc-value c-red">${segs.vencido}</div><div class="mc-sub">tiempo expirado</div></div>
-      <div class="mc"><div class="mc-label">Incompletos</div><div class="mc-value c-gray">${incompletos.length}</div><div class="mc-sub">fichas pendientes</div></div>
-      <div class="mc"><div class="mc-label">Retención</div><div class="mc-value c-teal">${retencion.length}</div><div class="mc-sub">graduados</div></div>
+      <div class="mc" onclick="document.querySelectorAll('.nav-btn')[3].click()"><div class="mc-label">Incompletos</div><div class="mc-value c-gray">${incompletos.length}</div><div class="mc-sub">fichas pendientes</div></div>
+      <div class="mc" onclick="document.querySelectorAll('.nav-btn')[4].click()"><div class="mc-label">Retención</div><div class="mc-value c-teal">${retencion.length}</div><div class="mc-sub">graduados</div></div>
       <div class="mc" onclick="goContratos()"><div class="mc-label">Contratos este mes</div><div class="mc-value c-green">${contratosEsteMes}</div><div class="mc-sub">iniciaron tratamiento</div></div>
       <div class="mc"><div class="mc-label">Ingreso mensual</div><div class="mc-value c-green" style="font-size:18px">${fmt(ingMens)}</div><div class="mc-sub">mensualidades activas</div></div>
       <div class="mc"><div class="mc-label">Cartera activa</div><div class="mc-value c-amber" style="font-size:18px">${fmt(cartera)}</div><div class="mc-sub">saldo por cobrar</div></div>
@@ -850,7 +861,7 @@ async function loadActivosMes() {
   document.getElementById('tbl-activos').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
   try {
     const mesHoy = new Date().toISOString().slice(0,7);
-    const data = await sb('GET',`v_resumen?status=eq.activo&fecha_inicio=gte.${mesHoy}-01&fecha_inicio=lte.${mesHoy}-31&order=fecha_inicio.desc`);
+    const data = await sb('GET',`v_resumen?fecha_inicio=gte.${mesHoy}-01&fecha_inicio=lte.${mesHoy}-31&status=neq.incompleto&order=fecha_inicio.desc`);
     if(!data.length){
       document.getElementById('tbl-activos').innerHTML='<div class="empty"><div class="empty-icon">📋</div>No hay contratos nuevos este mes.</div>';
       document.getElementById('pag-activos').innerHTML=`<span style="color:var(--text3);font-size:12px">Contratos de ${mesHoy} — 0 registros</span>`;
@@ -862,9 +873,18 @@ async function loadActivosMes() {
 }
 
 function goSeg(s) {
+  if(s==='reagendar'||s==='reagendado') {
+    document.querySelectorAll('.nav-btn')[6].click();
+    return;
+  }
   document.querySelectorAll('.nav-btn')[1].click();
   setTimeout(()=>{
     document.getElementById('f-segmento').value=s;
+    document.getElementById('f-tipo').value='';
+    document.getElementById('f-apar').value='';
+    document.getElementById('s-activos').value='';
+    searches.activos='';
+    pages.activos=1;
     loadActivos();
   },50);
 }
@@ -1400,15 +1420,16 @@ function showFlash(msg) {
 // ─── KPIs ─────────────────────────────────────────────────
 async function loadKPIs() {
   document.getElementById('kpi-content').innerHTML='<div class="loading"><span class="spin"></span>Calculando KPIs...</div>';
+  updateKpiMesLabel();
   try {
     const [allPac, allPagos] = await Promise.all([
       sb('GET','v_resumen?select=*'),
       sb('GET','pagos?select=*&order=fecha.desc')
     ]);
 
-    const now = new Date(today()+'T12:00:00');
-    const mesActual = today().slice(0,7);
-    const mesAnterior = (() => { const d=new Date(now); d.setMonth(d.getMonth()-1); return d.toISOString().slice(0,7); })();
+    const mesActual = kpiMes;
+    const now = new Date(mesActual+'-01T12:00:00');
+    const mesAnterior = (() => { const [y,m] = mesActual.split('-').map(Number); const d=new Date(y,m-2,1); return d.toISOString().slice(0,7); })();
 
     const activos = allPac.filter(p=>p.status==='activo');
     const incompletos = allPac.filter(p=>p.status==='incompleto');
@@ -1450,7 +1471,7 @@ async function loadKPIs() {
     const pctProblema = activos.length ? Math.round((segs.deudor+segs.critico+segs.fantasma)/activos.length*100) : 0;
 
     // Terminan próximo mes
-    const proximoMes = (() => { const d=new Date(now); d.setMonth(d.getMonth()+1); return d.toISOString().slice(0,7); })();
+    const proximoMes = (() => { const [y,m] = mesActual.split('-').map(Number); const d=new Date(y,m,1); return d.toISOString().slice(0,7); })();
     const terminanProximo = activos.filter(p=>{
       if(!p.fecha_inicio||!p.duracion_meses) return false;
       const fin = addMonths(p.fecha_inicio, p.duracion_meses);
@@ -1465,8 +1486,7 @@ async function loadKPIs() {
 
     document.getElementById('kpi-content').innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
-        <div style="font-size:16px;font-weight:600;color:var(--text)">KPIs — ${new Date().toLocaleDateString('es-MX',{month:'long',year:'numeric'})}</div>
-        <div style="font-size:12px;color:var(--text3)">Actualizado al ${today()}</div>
+        <div style="font-size:12px;color:var(--text3)">Datos al cierre de ${new Date(mesActual+'-28').toLocaleDateString('es-MX',{month:'long',year:'numeric'})}</div>
       </div>
       <div class="kpi-grid">
 
@@ -1536,6 +1556,31 @@ async function loadKPIs() {
   } catch(e) {
     document.getElementById('kpi-content').innerHTML=`<div class="empty">Error al cargar KPIs.<br><small>${e.message}</small></div>`;
   }
+}
+
+// ─── MES KPI ──────────────────────────────────────────────
+let kpiMes = today().slice(0,7); // YYYY-MM
+
+function cambiarMesKPI(dir) {
+  const [y,m] = kpiMes.split('-').map(Number);
+  const d = new Date(y, m-1+dir, 1);
+  kpiMes = d.toISOString().slice(0,7);
+  // Disable next button if current month
+  document.getElementById('kpi-mes-next').disabled = kpiMes >= today().slice(0,7);
+  loadKPIs();
+}
+
+function initKpiMes() {
+  kpiMes = today().slice(0,7);
+  document.getElementById('kpi-mes-next').disabled = true;
+  updateKpiMesLabel();
+}
+
+function updateKpiMesLabel() {
+  const [y,m] = kpiMes.split('-').map(Number);
+  const label = new Date(y,m-1,1).toLocaleDateString('es-MX',{month:'long',year:'numeric'});
+  const el = document.getElementById('kpi-mes-label');
+  if(el) el.textContent = label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 // ─── IMPORTAR REPORTE ─────────────────────────────────────
