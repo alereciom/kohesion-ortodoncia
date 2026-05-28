@@ -714,8 +714,9 @@ async function loadDashboard() {
     const segs = {sano:0,pendiente_inicio:0,sin_iniciar:0,reagendar:0,reagendado:0,deudor:0,atrasado:0,critico:0,fantasma:0,pronto:0,vencido:0};
     activos.forEach(p=>{ const s=segmento(p); if(segs[s]!==undefined) segs[s]++; });
 
-    const cartera = activos.reduce((s,p)=>s+saldo(p),0);
+    const carteraTotal = activos.reduce((s,p)=>s+p.total,0);
     const ingMens = activos.filter(p=>p.tipo_pago==='mensual').reduce((s,p)=>s+(p.mensualidad||0),0);
+    const anticiposPendientes = activos.filter(p=>p.estado_pago==='pendiente').reduce((s,p)=>s+(p.tipo_pago==='contado'?p.total:p.tipo_pago==='contado2'?p.total:(p.anticipo||0)),0);
     const mesHoy = today().slice(0,7);
     // Contratos = todos los pacientes (activos + retención) con fecha_inicio este mes
     const contratosEsteMes = all.filter(p=>p.fecha_inicio&&p.fecha_inicio.slice(0,7)===mesHoy&&p.status!=='incompleto').length;
@@ -739,8 +740,9 @@ async function loadDashboard() {
       <div class="mc" onclick="document.querySelectorAll('.nav-btn')[3].click()"><div class="mc-label">Incompletos</div><div class="mc-value c-gray">${incompletos.length}</div><div class="mc-sub">fichas pendientes</div></div>
       <div class="mc" onclick="document.querySelectorAll('.nav-btn')[4].click()"><div class="mc-label">Retención</div><div class="mc-value c-teal">${retencion.length}</div><div class="mc-sub">graduados</div></div>
       <div class="mc" onclick="goContratos()"><div class="mc-label">Contratos este mes</div><div class="mc-value c-green">${contratosEsteMes}</div><div class="mc-sub">iniciaron tratamiento</div></div>
-      <div class="mc"><div class="mc-label">Ingreso mensual</div><div class="mc-value c-green" style="font-size:18px">${fmt(ingMens)}</div><div class="mc-sub">mensualidades activas</div></div>
-      <div class="mc"><div class="mc-label">Cartera activa</div><div class="mc-value c-amber" style="font-size:18px">${fmt(cartera)}</div><div class="mc-sub">saldo por cobrar</div></div>
+      <div class="mc"><div class="mc-label">Cartera contratada</div><div class="mc-value c-blue" style="font-size:16px">${fmt(carteraTotal)}</div><div class="mc-sub">valor total del pool activo</div></div>
+      <div class="mc"><div class="mc-label">Ingreso mensual esperado</div><div class="mc-value c-green" style="font-size:16px">${fmt(ingMens)}</div><div class="mc-sub">suma de mensualidades</div></div>
+      <div class="mc"><div class="mc-label">Anticipos pendientes</div><div class="mc-value c-amber" style="font-size:16px">${fmt(anticiposPendientes)}</div><div class="mc-sub">por cobrar al inicio</div></div>
     `;
 
     // Charts
@@ -1469,7 +1471,8 @@ async function loadKPIs() {
 
     // Ingresos esperados vs cobrados mensualidades
     const ingresosEsperados = activos.filter(p=>p.tipo_pago==='mensual').reduce((s,p)=>s+(p.mensualidad||0),0);
-    const carteraTotal = activos.reduce((s,p)=>s+saldo(p),0);
+    const carteraTotal = activos.reduce((s,p)=>s+p.total,0);
+    const anticiposPend = activos.filter(p=>p.estado_pago==='pendiente').reduce((s,p)=>s+(p.tipo_pago==='contado'?p.total:p.tipo_pago==='contado2'?p.total:(p.anticipo||0)),0);
 
     // Segmentos
     const segs={sano:0,pendiente_inicio:0,sin_iniciar:0,reagendar:0,reagendado:0,deudor:0,atrasado:0,critico:0,fantasma:0,pronto:0,vencido:0};
@@ -1514,7 +1517,8 @@ async function loadKPIs() {
           <div class="kpi-row"><span class="kpi-label">Brecha de cobranza</span><span class="kpi-val ${cobradoEsteMes>=ingresosEsperados?'green':'amber'}">${fmt(Math.abs(ingresosEsperados-cobradoEsteMes))}</span></div>
           <div class="kpi-row"><span class="kpi-label">Anticipos cobrados</span><span class="kpi-val green">${fmt(anticiposCobrados)}</span></div>
           <div class="kpi-row"><span class="kpi-label">Anticipos pendientes</span><span class="kpi-val amber">${fmt(anticiposPendientes)}</span></div>
-          <div class="kpi-row"><span class="kpi-label">Cartera total activa</span><span class="kpi-val amber">${fmt(carteraTotal)}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Cartera contratada</span><span class="kpi-val blue">${fmt(carteraTotal)}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Anticipos pendientes</span><span class="kpi-val amber">${fmt(anticiposPend)}</span></div>
         </div>
 
         <div class="kpi-card">
