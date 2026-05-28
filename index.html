@@ -1,1 +1,1719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kohesión Dental · Ortodoncia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#f6f5f2; --surface:#fff; --surface2:#f0efe9; --surface3:#e8e7e0;
+  --border:rgba(0,0,0,0.07); --border2:rgba(0,0,0,0.13);
+  --text:#181715; --text2:#6a6860; --text3:#a8a69e;
+  --green:#1a5c3a; --green-bg:#eaf3ed; --green-mid:#2d7a52;
+  --blue:#1c4fa0; --blue-bg:#e8eef8;
+  --amber:#7a4800; --amber-bg:#fef2e0;
+  --red:#961c1c; --red-bg:#fde8e8;
+  --purple:#5a1a8a; --purple-bg:#f3e8fd;
+  --teal:#0e5c52; --teal-bg:#e0f4f1;
+  --gray:#444; --gray-bg:#f0efe9;
+  --r:10px; --r-sm:6px; --r-xs:4px;
+  --font:'Geist',sans-serif; --mono:'Geist Mono',monospace;
+  --shadow:0 1px 3px rgba(0,0,0,0.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;}
 
+/* Header */
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:200;}
+.hdr-logo{font-size:14px;font-weight:600;letter-spacing:-.3px;display:flex;align-items:center;gap:8px;}
+.hdr-dot{width:7px;height:7px;background:var(--green);border-radius:50%;}
+.hdr-right{display:flex;align-items:center;gap:12px;}
+.hdr-date{font-size:12px;color:var(--text3);font-family:var(--mono);}
+.hdr-cfg{background:none;border:1px solid var(--border2);border-radius:var(--r-sm);padding:4px 10px;font-size:12px;cursor:pointer;color:var(--text2);font-family:var(--font);}
+
+/* Nav */
+.nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;gap:2px;}
+.nav-btn{background:none;border:none;border-bottom:2px solid transparent;padding:10px 14px;font-size:13px;font-family:var(--font);color:var(--text3);cursor:pointer;font-weight:500;transition:all .15s;white-space:nowrap;}
+.nav-btn.active{color:var(--text);border-bottom-color:var(--green);}
+.nav-btn:hover{color:var(--text2);}
+
+/* Main */
+.main{max-width:1400px;margin:0 auto;padding:1.5rem;}
+
+/* Config */
+#cfg-panel{background:#fffbe6;border:1px solid #e8d060;border-radius:var(--r);padding:1.25rem;margin-bottom:1.25rem;}
+#cfg-panel h3{font-size:13px;font-weight:600;margin-bottom:10px;color:#6a4c00;}
+.cfg-row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;}
+.cfg-row input{font-family:var(--mono);font-size:12px;background:#fff;border:1px solid #d8c060;border-radius:var(--r-sm);padding:7px 10px;color:var(--text);outline:none;width:100%;}
+.cfg-row button{background:#6a4c00;color:#fff;border:none;border-radius:var(--r-sm);padding:8px 16px;font-size:13px;cursor:pointer;font-family:var(--font);white-space:nowrap;}
+
+/* Metrics */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1.25rem;}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;cursor:pointer;transition:border-color .15s;}
+.mc:hover{border-color:var(--border2);}
+.mc.selected{border-color:var(--green);box-shadow:0 0 0 2px var(--green-bg);}
+.mc-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;}
+.mc-value{font-size:26px;font-weight:600;line-height:1;margin-bottom:2px;}
+.mc-sub{font-size:10px;color:var(--text3);}
+
+/* Segment colors */
+.c-green{color:var(--green);} .c-blue{color:var(--blue);} .c-amber{color:var(--amber);}
+.c-red{color:var(--red);} .c-purple{color:var(--purple);} .c-teal{color:var(--teal);}
+.c-gray{color:var(--gray);}
+
+/* Card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;}
+
+/* Toolbar */
+.toolbar{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
+.search-wrap{position:relative;flex:1;min-width:200px;}
+.search-wrap input{width:100%;padding-left:32px;font-family:var(--font);font-size:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px 8px 32px;color:var(--text);outline:none;}
+.search-wrap input:focus{border-color:var(--green);}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.4;}
+.fsel{font-family:var(--font);font-size:13px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);outline:none;}
+
+/* Buttons */
+.btn{font-family:var(--font);cursor:pointer;border-radius:var(--r-sm);font-size:13px;font-weight:500;padding:8px 14px;border:none;transition:opacity .15s,transform .1s;white-space:nowrap;}
+.btn:active{transform:scale(.98);}
+.btn-primary{background:var(--green);color:#fff;}
+.btn-primary:hover{opacity:.9;}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2);}
+.btn-ghost:hover{background:var(--surface2);}
+.btn-amber{background:var(--amber-bg);border:1px solid #e8b060;color:var(--amber);}
+.btn-danger{background:transparent;border:1px solid #f0a0a0;color:var(--red);}
+.btn-icon{padding:5px 8px;font-size:13px;}
+.btn-checkin{background:var(--green-bg);border:1px solid #a0d0b0;color:var(--green);font-weight:600;}
+.btn-checkin:hover{background:#d8edd8;}
+
+/* Table */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:8px 8px;border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+.td-name{font-weight:500;font-size:13px;}
+.td-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+
+/* Badge */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap;letter-spacing:.2px;}
+.b-sano{background:var(--green-bg);color:var(--green);}
+.b-deudor{background:var(--amber-bg);color:var(--amber);}
+.b-atrasado{background:var(--blue-bg);color:var(--blue);}
+.b-critico{background:var(--red-bg);color:var(--red);}
+.b-fantasma{background:var(--purple-bg);color:var(--purple);}
+.b-pronto{background:var(--teal-bg);color:var(--teal);}
+.b-vencido{background:var(--red-bg);color:var(--red);}
+.b-incompleto{background:var(--gray-bg);color:var(--gray);}
+.b-contado{background:var(--green-bg);color:var(--green);}
+.b-mensual{background:var(--blue-bg);color:var(--blue);}
+.b-brackets_metalicos{background:#f0e8f8;color:#6a1a8a;}
+.b-brackets_ceramicos{background:#fce8f8;color:#8a1a6a;}
+.b-alineadores_aw{background:#e0f4f8;color:#0e4c6a;}
+.b-alineadores_orec{background:#e0f8ec;color:#0e5c3a;}
+.b-retencion{background:var(--teal-bg);color:var(--teal);}
+.b-primera{background:#fff3e0;color:#e65100;}
+.b-lista-segunda{background:#e8f5e9;color:#1b5e20;border:1px solid #4caf50;}
+.b-reagendar{background:#fde8e8;color:#961c1c;border:1px solid #f5a0a0;}
+.b-reagendado{background:#fef3e2;color:#7a4800;border:1px solid #e8c060;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:1.25rem;}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.25rem;}
+.kpi-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.kpi-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.kpi-row:last-child{border-bottom:none;}
+.kpi-label{color:var(--text2);}
+.kpi-val{font-weight:600;color:var(--text);}
+.kpi-val.green{color:var(--green);}
+.kpi-val.amber{color:var(--amber);}
+.kpi-val.red{color:var(--red);}
+.kpi-val.blue{color:var(--blue);}
+
+/* Progress */
+.prog-bg{background:var(--surface2);border-radius:3px;height:4px;min-width:50px;}
+.prog-fill{height:4px;border-radius:3px;transition:width .3s;}
+
+/* Pagination */
+.pag{display:flex;align-items:center;gap:6px;margin-top:1rem;justify-content:flex-end;font-size:12px;color:var(--text3);}
+.pag-btn{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);padding:4px 10px;cursor:pointer;font-size:12px;font-family:var(--font);color:var(--text2);}
+.pag-btn:disabled{opacity:.35;cursor:default;}
+.pag-btn.cur{background:var(--green);color:#fff;border-color:var(--green);}
+
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center;padding:1rem;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--r);padding:1.5rem;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:1.25rem;display:flex;align-items:center;gap:8px;}
+.modal-actions{display:flex;gap:8px;margin-top:1.25rem;flex-wrap:wrap;}
+
+/* Form */
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.fg label{font-size:11px;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.4px;}
+.fg input,.fg select,.fg textarea{font-family:var(--font);font-size:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px;color:var(--text);outline:none;transition:border-color .15s;width:100%;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--green);}
+.fg .hint{font-size:10px;color:var(--text3);margin-top:2px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;}
+.form-full{grid-column:1/-1;}
+.calc-box{background:var(--green-bg);border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--green);margin-bottom:10px;display:none;}
+
+/* Section divider */
+.sect{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin:1rem 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+
+/* Alert */
+.alert{border-radius:var(--r-sm);padding:10px 12px;font-size:12px;margin-bottom:10px;line-height:1.5;}
+.alert-info{background:var(--blue-bg);color:var(--blue);}
+.alert-warn{background:var(--amber-bg);color:var(--amber);}
+
+/* Empty */
+.empty{text-align:center;padding:3rem 1rem;color:var(--text3);}
+.empty-icon{font-size:28px;margin-bottom:8px;opacity:.35;}
+
+/* Loading */
+.loading{text-align:center;padding:2rem;color:var(--text3);font-size:13px;}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;margin-right:6px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Dashboard */
+.dash-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
+.dash-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;}
+.dash-card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text3);margin-bottom:12px;}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;}
+.bar-label{width:100px;color:var(--text2);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bar-bg{flex:1;background:var(--surface2);border-radius:3px;height:8px;}
+.bar-fill{height:8px;border-radius:3px;}
+.bar-val{width:32px;text-align:right;color:var(--text2);flex-shrink:0;}
+.month-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;}
+.month-box{background:var(--surface2);border-radius:var(--r-sm);padding:8px;text-align:center;}
+.month-box-label{font-size:10px;color:var(--text3);margin-bottom:4px;}
+.month-box-val{font-size:18px;font-weight:600;color:var(--text);}
+.month-box-sub{font-size:10px;color:var(--text3);}
+
+/* Checkin flash */
+.flash{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--green);color:#fff;padding:10px 18px;border-radius:var(--r);font-size:13px;font-weight:500;z-index:999;animation:flashin .3s ease;box-shadow:0 4px 12px rgba(0,0,0,.15);}
+@keyframes flashin{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* Incomplete highlight */
+tr.row-incomplete td{color:var(--text3);}
+tr.row-incomplete td:first-child{color:var(--text);}
+
+@media(max-width:768px){
+  .form-grid{grid-template-columns:1fr;}
+  .dash-row{grid-template-columns:1fr;}
+  .cfg-row{grid-template-columns:1fr;}
+  .metrics{grid-template-columns:repeat(auto-fit,minmax(120px,1fr));}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-logo"><div class="hdr-dot"></div>Kohesión Dental · Ortodoncia</div>
+  <div class="hdr-right">
+    <span class="hdr-date" id="hdr-date"></span>
+    <button class="hdr-cfg" onclick="toggleCfg()">⚙ Configuración</button>
+  </div>
+</header>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="setPage('dashboard',this)">Dashboard</button>
+  <button class="nav-btn" onclick="setPage('pacientes',this)">Pacientes activos</button>
+  <button class="nav-btn" onclick="setPage('mensualidades',this)">Mensualidades</button>
+  <button class="nav-btn" onclick="setPage('incompletos',this)">Incompletos</button>
+  <button class="nav-btn" onclick="setPage('retencion',this)">Retención</button>
+  <button class="nav-btn" onclick="setPage('kpis',this)">KPIs del mes</button>
+  <button class="nav-btn" onclick="setPage('importar',this)">Importar reporte</button>
+</nav>
+
+<main class="main">
+
+<!-- Config -->
+<div id="cfg-panel" style="display:none">
+  <h3>🔑 Conexión a Supabase</h3>
+  <div class="cfg-row">
+    <div class="fg" style="margin:0"><label>Project URL</label><input id="cfg-url" type="text" placeholder="https://xxxx.supabase.co"/></div>
+    <div class="fg" style="margin:0"><label>Anon public key</label><input id="cfg-key" type="text" placeholder="eyJhbGci..."/></div>
+    <button onclick="saveConfig()">Conectar</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="page-dashboard">
+  <div class="metrics" id="dash-metrics"><div class="loading"><span class="spin"></span>Cargando...</div></div>
+  <div class="dash-row" id="dash-charts"><div class="loading"><span class="spin"></span></div></div>
+</div>
+
+<!-- PACIENTES ACTIVOS -->
+<div id="page-pacientes" style="display:none">
+  <div class="card">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="s-activos" placeholder="Buscar por nombre o apellido..." oninput="debounce('activos')"/>
+      </div>
+      <select class="fsel" id="f-segmento" onchange="loadActivos()">
+        <option value="">Todos los segmentos</option>
+        <option value="reagendar">📞 Reagendar</option>
+        <option value="reagendado">📅 Reagendados</option>
+        <option value="pendiente_inicio">⏳ Pendiente por empezar</option>
+        <option value="sin_iniciar">⚠ Sin iniciar +14 días</option>
+        <option value="sano">✓ Sanos</option>
+        <option value="deudor">⚠ Deudores</option>
+        <option value="atrasado">📅 Atrasados en citas</option>
+        <option value="critico">🔴 Críticos</option>
+        <option value="fantasma">👻 Fantasmas</option>
+        <option value="pronto">⏱ Próximos a terminar</option>
+        <option value="vencido">❌ Vencidos</option>
+      </select>
+      <select class="fsel" id="f-tipo" onchange="loadActivos()">
+        <option value="">Contado y mensual</option>
+        <option value="contado">Contado</option>
+        <option value="mensual">Mensualidades</option>
+      </select>
+      <select class="fsel" id="f-apar" onchange="loadActivos()">
+        <option value="">Todos los tipos</option>
+        <option value="primera_fase">Primera fase</option>
+        <option value="brackets_metalicos">Brackets metálicos</option>
+        <option value="brackets_ceramicos">Brackets cerámicos</option>
+        <option value="alineadores_aw">Alineadores AW</option>
+        <option value="alineadores_orec">Alineadores OREC</option>
+      </select>
+      <button class="btn btn-primary" onclick="openNuevo()">+ Nuevo paciente</button>
+    </div>
+    <div id="tbl-activos"><div class="loading"><span class="spin"></span>Cargando...</div></div>
+    <div class="pag" id="pag-activos"></div>
+  </div>
+</div>
+
+<!-- MENSUALIDADES -->
+<div id="page-mensualidades" style="display:none">
+  <div class="card">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="s-mens" placeholder="Buscar paciente..." oninput="debounce('mens')"/>
+      </div>
+      <select class="fsel" id="f-mens-estado" onchange="loadMens()">
+        <option value="">Todos</option>
+        <option value="aldia">Al día</option>
+        <option value="atraso">Con atraso</option>
+        <option value="liquidado">Liquidados</option>
+      </select>
+    </div>
+    <div id="tbl-mens"><div class="loading"><span class="spin"></span>Cargando...</div></div>
+    <div class="pag" id="pag-mens"></div>
+  </div>
+</div>
+
+<!-- INCOMPLETOS -->
+<div id="page-incompletos" style="display:none">
+  <div class="alert alert-info" style="margin-bottom:1rem">
+    <strong>781 pacientes importados.</strong> Recepción puede completar la ficha cuando el paciente llegue a su próxima cita. Solo los pacientes con ficha completa entran al pool activo.
+  </div>
+  <div class="card">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="s-inc" placeholder="Buscar por nombre o apellido..." oninput="debounce('inc')"/>
+      </div>
+      <button class="btn btn-primary" onclick="openNuevo()">+ Nuevo paciente</button>
+    </div>
+    <div id="tbl-inc"><div class="loading"><span class="spin"></span>Cargando...</div></div>
+    <div class="pag" id="pag-inc"></div>
+  </div>
+</div>
+
+<!-- IMPORTAR REPORTE -->
+<div id="page-importar" style="display:none">
+  <div class="card">
+    <div style="font-size:15px;font-weight:600;margin-bottom:4px">Importar reporte de asistencia</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:1.25rem">Sube el CSV con los pacientes agendados del día. El sistema registrará check-ins y marcará faltas automáticamente.</div>
+
+    <div style="background:var(--surface2);border-radius:var(--r);padding:1rem;margin-bottom:1rem;font-size:12px;color:var(--text2)">
+      <strong style="color:var(--text);display:block;margin-bottom:4px">Formato requerido del CSV:</strong>
+      Nombre, Apellido Paterno, Apellido Materno, Estado de Cita<br>
+      <span style="font-family:var(--mono);font-size:11px;color:var(--text3)">Maria,Garcia,Lopez,asistió<br>Juan,Perez,Martinez,faltó a su cita</span>
+    </div>
+
+    <div class="form-grid" style="max-width:500px;margin-bottom:1rem">
+      <div class="fg">
+        <label>Fecha del reporte</label>
+        <input type="date" id="imp-fecha"/>
+        <span class="hint">Esta fecha se aplicará a todas las asistencias del archivo</span>
+      </div>
+      <div class="fg">
+        <label>Archivo CSV</label>
+        <input type="file" id="imp-file" accept=".csv" style="font-size:13px;padding:6px"/>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="importarReporte()" style="margin-bottom:1rem">Procesar reporte →</button>
+    <div id="imp-resultado"></div>
+  </div>
+
+  <div class="card" id="card-reagendar" style="display:none">
+    <div style="font-size:14px;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:8px">
+      <span class="badge b-reagendar">Reagendar</span>
+      <span id="reagendar-count" style="color:var(--text2);font-weight:400;font-size:13px"></span>
+    </div>
+    <div id="tbl-reagendar"></div>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div id="page-kpis" style="display:none">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem;flex-wrap:wrap">
+    <div style="font-size:14px;font-weight:500;color:var(--text)">KPIs del mes</div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button class="btn btn-ghost btn-icon" onclick="cambiarMesKPI(-1)">←</button>
+      <span id="kpi-mes-label" style="font-size:13px;font-weight:500;color:var(--text);min-width:120px;text-align:center"></span>
+      <button class="btn btn-ghost btn-icon" id="kpi-mes-next" onclick="cambiarMesKPI(1)">→</button>
+    </div>
+  </div>
+  <div id="kpi-content"><div class="loading"><span class="spin"></span>Cargando KPIs...</div></div>
+</div>
+
+<!-- RETENCIÓN -->
+<div id="page-retencion" style="display:none">
+  <div class="card">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="s-ret" placeholder="Buscar paciente..." oninput="debounce('ret')"/>
+      </div>
+    </div>
+    <div id="tbl-ret-primera" style="margin-bottom:1.5rem"></div>
+    <div id="tbl-ret"><div class="loading"><span class="spin"></span>Cargando...</div></div>
+    <div class="pag" id="pag-ret"></div>
+  </div>
+</div>
+
+</main>
+
+<!-- MODAL: Nuevo / Editar paciente -->
+<div class="overlay" id="modal-paciente">
+<div class="modal">
+  <div class="modal-title" id="modal-pac-title">Nuevo paciente</div>
+  <input type="hidden" id="m-id"/>
+  <div class="sect">Datos personales</div>
+  <div class="form-grid">
+    <div class="fg form-full"><label>Nombre(s)</label><input id="m-nombre" type="text" placeholder="Ej. María Fernanda"/></div>
+    <div class="fg"><label>Apellido paterno</label><input id="m-ap" type="text"/></div>
+    <div class="fg"><label>Apellido materno</label><input id="m-am" type="text"/></div>
+    <div class="fg form-full"><label>Teléfono</label><input id="m-tel" type="text" placeholder="844 000 0000"/></div>
+  </div>
+  <div class="sect">Tratamiento</div>
+  <div class="form-grid">
+    <div class="fg"><label>Aparatología</label>
+      <select id="m-apar">
+        <option value="">Seleccionar...</option>
+        <option value="primera_fase">Primera fase</option>
+        <option value="brackets_metalicos">Brackets metálicos</option>
+        <option value="brackets_ceramicos">Brackets cerámicos</option>
+        <option value="alineadores_aw">Alineadores AW</option>
+        <option value="alineadores_orec">Alineadores OREC</option>
+      </select>
+    </div>
+    <div class="fg"><label>Fecha de inicio</label><input id="m-fecha" type="date"/></div>
+    <div class="fg"><label>Duración estimada (meses)</label><input id="m-dur" type="number" min="1" max="60" value="18"/></div>
+    <div class="fg"><label>Última visita registrada</label><input id="m-ultima" type="date"/>
+      <span class="hint">Para pacientes ya en tratamiento</span></div>
+  </div>
+  <div class="sect">Pago</div>
+  <div class="form-grid">
+    <div class="fg"><label>Forma de pago</label>
+      <select id="m-tipo" onchange="togglePago()">
+        <option value="">Seleccionar...</option>
+        <option value="contado">Contado — 1 exhibición</option>
+        <option value="contado2">Contado — 2 pagos</option>
+        <option value="mensual">Mensualidades</option>
+      </select>
+    </div>
+    <div class="fg"><label>Monto total del tratamiento ($)</label><input id="m-total" type="number" min="0" placeholder="Ej. 24000" oninput="updateCalc()"/></div>
+    <div class="fg form-full" id="w-estado-pago" style="display:none"><label>Estado del pago inicial</label>
+      <select id="m-estado-pago">
+        <option value="pagado">✅ Pagado — ya se recibió</option>
+        <option value="pendiente">⏳ Pendiente — aún no se cobra</option>
+      </select>
+      <span class="hint">Para contado: estado del pago total. Para mensualidades: estado del anticipo.</span>
+    </div>
+    <div class="fg" id="w-anticipo" style="display:none"><label>Anticipo ($)</label><input id="m-anticipo" type="number" min="0" placeholder="Ej. 4000" oninput="updateCalc()"/></div>
+    <div class="fg" id="w-primer-pago" style="display:none"><label>Primer pago ($)</label><input id="m-primer-pago" type="number" min="0" placeholder="Ej. 10000" oninput="updateCalc()"/></div>
+    <div class="fg" id="w-fecha-primer-pago" style="display:none"><label>Fecha del primer pago</label><input id="m-fecha-primer-pago" type="date"/></div>
+    <div class="fg" id="w-segundo-pago" style="display:none"><label>Segundo pago ($)</label><input id="m-segundo-pago" type="number" min="0" placeholder="Ej. 15000" oninput="updateCalc()"/><span class="hint">Se cobra 30 días después del primer pago. Si no se registra en ese plazo, el paciente pasa a Deudor.</span></div>
+    <div class="fg" id="w-nmens" style="display:none"><label>Número de mensualidades</label><input id="m-nmens" type="number" min="1" max="60" placeholder="Ej. 20" oninput="updateCalc()"/></div>
+    <div class="fg" id="w-mens" style="display:none"><label>Mensualidad (calculada)</label><input id="m-mensualidad" type="number" min="0" placeholder="Se calcula automático" readonly style="background:var(--surface3);color:var(--text2)"/></div>
+    <div class="fg" id="w-pagadas" style="display:none"><label>Mensualidades ya pagadas (al día de hoy)</label><input id="m-pagadas" type="number" min="0" value="0"/>
+      <span class="hint">Solo para pacientes ya en tratamiento</span></div>
+  </div>
+  <div class="calc-box" id="calc-box"></div>
+  <div class="fg"><label>Notas</label><textarea id="m-notas" rows="2" placeholder="Observaciones..."></textarea></div>
+  <div class="modal-actions">
+    <button class="btn btn-primary" onclick="guardarPaciente()">Guardar paciente</button>
+    <button class="btn btn-ghost" onclick="closeOverlay('modal-paciente')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Pago -->
+<div class="overlay" id="modal-pago">
+<div class="modal">
+  <div class="modal-title">💰 Registrar pago</div>
+  <input type="hidden" id="pago-id"/>
+  <div id="pago-resumen" style="background:var(--surface2);border-radius:var(--r-sm);padding:10px 12px;font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.7;"></div>
+  <div class="form-grid">
+    <div class="fg"><label>Fecha del pago</label><input id="pago-fecha" type="date"/></div>
+    <div class="fg"><label>Monto recibido ($)</label><input id="pago-monto" type="number" min="0"/></div>
+    <div class="fg form-full"><label>Nota (opcional)</label><input id="pago-nota" type="text" placeholder="Ej. transferencia, efectivo..."/></div>
+  </div>
+  <div class="modal-actions">
+    <button class="btn btn-primary" onclick="confirmarPago()">Confirmar pago</button>
+    <button class="btn btn-ghost" onclick="closeOverlay('modal-pago')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Check-in -->
+<div class="overlay" id="modal-checkin">
+<div class="modal" style="max-width:420px">
+  <div class="modal-title">✅ Registrar visita</div>
+  <input type="hidden" id="ci-id"/>
+  <div id="ci-nombre" style="font-size:16px;font-weight:600;margin-bottom:8px;"></div>
+  <div class="fg"><label>Fecha de visita</label><input id="ci-fecha" type="date"/></div>
+  <div class="fg"><label>Nota (opcional)</label><input id="ci-nota" type="text" placeholder="Ej. revisión de arco, bracket caído..."/></div>
+  <div class="modal-actions">
+    <button class="btn btn-checkin" onclick="confirmarCheckin()">✓ Confirmar visita</button>
+    <button class="btn btn-ghost" onclick="closeOverlay('modal-checkin')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Retención -->
+<div class="overlay" id="modal-ret">
+<div class="modal" style="max-width:400px">
+  <div class="modal-title">🎓 Pasar a retención</div>
+  <div id="ret-txt" style="font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.6;"></div>
+  <div class="modal-actions">
+    <button class="btn btn-primary" onclick="confirmarRetencion()">Confirmar</button>
+    <button class="btn btn-ghost" onclick="closeOverlay('modal-ret')">Cancelar</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const CFG_KEY = 'kd_cfg_v2';
+let SB_URL = '', SB_KEY = '', cfgVisible = false;
+const PAGE = 30;
+let pages = {activos:1,mens:1,inc:1,ret:1};
+let searches = {activos:'',mens:'',inc:'',ret:''};
+let currentPage = 'dashboard';
+let debTimers = {};
+let pagoTarget = null, retTarget = null;
+let patientData = [];
+
+// ─── INIT ─────────────────────────────────────────────────
+function init() {
+  document.getElementById('hdr-date').textContent =
+    new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const c = JSON.parse(localStorage.getItem(CFG_KEY)||'{}');
+  if (c.url && c.key) {
+    SB_URL = c.url; SB_KEY = c.key;
+    document.getElementById('cfg-url').value = SB_URL;
+    document.getElementById('cfg-key').value = SB_KEY;
+    loadDashboard();
+  } else {
+    document.getElementById('cfg-panel').style.display = 'block';
+    cfgVisible = true;
+  }
+}
+function toggleCfg() {
+  cfgVisible = !cfgVisible;
+  document.getElementById('cfg-panel').style.display = cfgVisible ? 'block' : 'none';
+}
+function saveConfig() {
+  SB_URL = document.getElementById('cfg-url').value.trim().replace(/\/$/,'');
+  SB_KEY = document.getElementById('cfg-key').value.trim();
+  if (!SB_URL||!SB_KEY) { alert('Ingresa URL y clave'); return; }
+  localStorage.setItem(CFG_KEY, JSON.stringify({url:SB_URL,key:SB_KEY}));
+  document.getElementById('cfg-panel').style.display = 'none';
+  cfgVisible = false;
+  loadDashboard();
+}
+
+// ─── SUPABASE REST ─────────────────────────────────────────
+async function sb(method, path, body) {
+  const headers = {
+    'apikey': SB_KEY,
+    'Authorization': `Bearer ${SB_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': method==='POST' ? 'return=representation' : 'return=minimal'
+  };
+  if (method==='GET') headers['Accept'] = 'application/json';
+  if (method==='DELETE'||method==='PATCH') headers['Prefer'] = 'return=minimal';
+  const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
+    method, headers, body: body ? JSON.stringify(body) : undefined
+  });
+  if (!res.ok) { const e = await res.text(); throw new Error(e); }
+  if (res.status===204) return null;
+  return res.json();
+}
+
+// ─── HELPERS ──────────────────────────────────────────────
+const fmt = n => '$' + Math.round(n||0).toLocaleString('es-MX');
+const today = () => new Date().toISOString().slice(0,10);
+function addMonths(d,n) {
+  const dt = new Date(d+'T12:00:00');
+  dt.setMonth(dt.getMonth()+n);
+  return dt.toISOString().slice(0,10);
+}
+function diffDays(d1,d2) {
+  return Math.floor((new Date(d2+'T12:00:00')-new Date(d1+'T12:00:00'))/(1000*60*60*24));
+}
+function monthsElapsed(start) {
+  return Math.floor(diffDays(start,today())/30.44);
+}
+function monthsLeft(start,dur) {
+  const end = addMonths(start,dur);
+  return Math.round(diffDays(today(),end)/30.44*10)/10;
+}
+function progPct(start,dur) {
+  const s=new Date(start+'T12:00:00'), e=new Date(addMonths(start,dur)+'T12:00:00'), n=new Date(today()+'T12:00:00');
+  return Math.min(100,Math.max(0,Math.round((n-s)/(e-s)*100)));
+}
+function pagosEsperados(p) {
+  if (p.tipo_pago!=='mensual') return 0;
+  // Mensualidades start the month after inicio
+  const mesesDesdeInicio = monthsElapsed(p.fecha_inicio);
+  const mesPago = Math.max(0, Math.min(mesesDesdeInicio, p.n_mensualidades||1));
+  return mesPago*(p.mensualidad||0);
+}
+function totalCobradoReal(p) {
+  const pagosRegistrados = p.total_cobrado||0;
+  const pagosInicio = (p.mensualidades_pagadas_inicio||0)*(p.mensualidad||0);
+  // Add anticipo if already paid
+  const anticipoPagado = (p.anticipo||0) > 0 && p.estado_pago==='pagado' ? (p.anticipo||0) : 0;
+  // For contado, if estado_pago=pagado count full total as cobrado (unless pagos registered)
+  const contadoPagado = p.tipo_pago==='contado' && p.estado_pago==='pagado' && pagosRegistrados===0 ? p.total : 0;
+  // contado2: primer pago + segundo si ya pasaron 30 días y está registrado
+  const contado2Cobrado = p.tipo_pago==='contado2' && pagosRegistrados===0
+    ? (p.primer_pago||0) // at minimum first payment if made
+    : 0;
+  return pagosRegistrados + pagosInicio + anticipoPagado + contadoPagado + contado2Cobrado;
+}
+function saldo(p) { return Math.max(0,p.total-totalCobradoReal(p)); }
+function numPagosTotal(p) { return (p.num_pagos||0)+(p.mensualidades_pagadas_inicio||0); }
+
+function segmento(p) {
+  if (!p.fecha_inicio) return 'incompleto';
+
+  // Pendiente por empezar: no visits AND no ultima_visita (truly never attended)
+  const totalVisitas = p.total_visitas || 0;
+  const tieneVisita = totalVisitas > 0 || !!(p.ultima_visita_real || p.ultima_visita);
+  const diasDesdeInicio = p.fecha_inicio ? diffDays(p.fecha_inicio, today()) : 999;
+  if (!tieneVisita && diasDesdeInicio >= 0) {
+    return diasDesdeInicio <= 14 ? 'pendiente_inicio' : 'sin_iniciar';
+  }
+
+  const ultima = p.ultima_visita_real || p.ultima_visita;
+  const diasSinVenir = ultima ? diffDays(ultima, today()) : 999;
+  const ml = monthsLeft(p.fecha_inicio, p.duracion_meses||18);
+  const cobrado = totalCobradoReal(p);
+  const esperado = pagosEsperados(p);
+  const contado2Vencido = p.tipo_pago==='contado2' && p.fecha_primer_pago &&
+    diffDays(p.fecha_primer_pago, today()) > 30 && cobrado < p.total*0.99;
+  const deudeActual =
+    (p.tipo_pago==='mensual' && cobrado < esperado*0.9) ||
+    (p.tipo_pago==='contado' && cobrado < p.total*0.99) ||
+    contado2Vencido;
+  const sinVenir = diasSinVenir > 35;
+  if (p.aparatologia==='primera_fase' && p.status==='retencion') {
+    const mesesRet = p.fecha_retencion ? Math.floor(diffDays(p.fecha_retencion, today())/30.44) : 0;
+    return mesesRet >= 12 ? 'lista_segunda' : 'retencion_primera';
+  }
+  if (ml < 0) return 'vencido';
+  if (diasSinVenir > 60) return 'fantasma';
+  if (ml <= 2) return 'pronto';
+  if (sinVenir && deudeActual) return 'critico';
+  if (deudeActual) return 'deudor';
+  if (sinVenir) return 'atrasado';
+  // Check reagendar status
+  if (p.estado_reagendar==='reagendar') return 'reagendar';
+  if (p.estado_reagendar==='reagendado') return 'reagendado';
+  return 'sano';
+}
+const SEG_LABEL = {
+  sano:'Sano', deudor:'Deudor', atrasado:'Sin cita', critico:'Crítico',
+  fantasma:'Fantasma', pronto:'Termina pronto', vencido:'Vencido', incompleto:'Incompleto',
+  lista_segunda:'✓ Lista 2ª fase', retencion_primera:'Retención 1ª fase',
+  pendiente_inicio:'Pendiente por empezar', sin_iniciar:'Sin iniciar',
+  reagendar:'Reagendar', reagendado:'Reagendado'
+};
+const SEG_CLASS = {
+  sano:'b-sano', deudor:'b-deudor', atrasado:'b-atrasado', critico:'b-critico',
+  fantasma:'b-fantasma', pronto:'b-pronto', vencido:'b-vencido', incompleto:'b-incompleto',
+  lista_segunda:'b-lista-segunda', retencion_primera:'b-primera',
+  pendiente_inicio:'b-mensual', sin_iniciar:'b-atraso',
+  reagendar:'b-reagendar', reagendado:'b-reagendado'
+};
+function badgeSeg(p) {
+  const s=segmento(p);
+  return `<span class="badge ${SEG_CLASS[s]||'b-incompleto'}">${SEG_LABEL[s]||s}</span>`;
+}
+function nombreCompleto(p) {
+  return `${p.nombre} ${p.apellido_paterno}${p.apellido_materno?' '+p.apellido_materno:''}`;
+}
+function initials(p) {
+  return (p.nombre[0]+(p.apellido_paterno[0]||'')).toUpperCase();
+}
+
+// ─── DEBOUNCE ──────────────────────────────────────────────
+function debounce(tab) {
+  const ids={activos:'s-activos',mens:'s-mens',inc:'s-inc',ret:'s-ret'};
+  searches[tab]=document.getElementById(ids[tab]).value;
+  pages[tab]=1;
+  clearTimeout(debTimers[tab]);
+  debTimers[tab]=setTimeout(()=>{
+    if(tab==='activos')loadActivos();
+    if(tab==='mens')loadMens();
+    if(tab==='inc')loadInc();
+    if(tab==='ret')loadRet();
+  },300);
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────
+function setPage(page,el) {
+  currentPage=page;
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  ['dashboard','pacientes','mensualidades','incompletos','retencion','kpis','importar'].forEach(p=>{
+    document.getElementById('page-'+p).style.display=p===page?'block':'none';
+  });
+  if(page==='dashboard') loadDashboard();
+  if(page==='pacientes') loadActivos();
+  if(page==='mensualidades') loadMens();
+  if(page==='incompletos') loadInc();
+  if(page==='retencion') loadRet();
+  if(page==='kpis') { initKpiMes(); loadKPIs(); }
+  if(page==='importar') loadReagendar();
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────
+async function loadDashboard() {
+  document.getElementById('dash-metrics').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
+  try {
+    const all = await sb('GET','v_resumen?select=*&order=apellido_paterno.asc');
+    const activos = all.filter(p=>p.status==='activo');
+    const incompletos = all.filter(p=>p.status==='incompleto');
+    const retencion = all.filter(p=>p.status==='retencion');
+
+    // Segment counts
+    const segs = {sano:0,pendiente_inicio:0,sin_iniciar:0,reagendar:0,reagendado:0,deudor:0,atrasado:0,critico:0,fantasma:0,pronto:0,vencido:0};
+    activos.forEach(p=>{ const s=segmento(p); if(segs[s]!==undefined) segs[s]++; });
+
+    const cartera = activos.reduce((s,p)=>s+saldo(p),0);
+    const ingMens = activos.filter(p=>p.tipo_pago==='mensual').reduce((s,p)=>s+(p.mensualidad||0),0);
+    const mesHoy = today().slice(0,7);
+    // Contratos = todos los pacientes (activos + retención) con fecha_inicio este mes
+    const contratosEsteMes = all.filter(p=>p.fecha_inicio&&p.fecha_inicio.slice(0,7)===mesHoy&&p.status!=='incompleto').length;
+    // Dashboard mes selector
+    const dashMesLabel = new Date(mesHoy+'-01').toLocaleDateString('es-MX',{month:'long',year:'numeric'});
+
+    // Metrics row
+    document.getElementById('dash-metrics').innerHTML = `
+      <div class="mc" onclick="goSeg('')"><div class="mc-label">Activos hoy</div><div class="mc-value c-blue">${activos.length}</div><div class="mc-sub">en tratamiento</div></div>
+      <div class="mc" onclick="goSeg('sano')"><div class="mc-label">Sanos</div><div class="mc-value c-green">${segs.sano}</div><div class="mc-sub">al día en todo</div></div>
+      <div class="mc" onclick="goSeg('deudor')"><div class="mc-label">Deudores</div><div class="mc-value c-amber">${segs.deudor}</div><div class="mc-sub">deben mensualidades</div></div>
+      <div class="mc" onclick="goSeg('atrasado')"><div class="mc-label">Sin cita reciente</div><div class="mc-value c-blue">${segs.atrasado}</div><div class="mc-sub">>35 días sin venir</div></div>
+      <div class="mc" onclick="goSeg('critico')"><div class="mc-label">Críticos</div><div class="mc-value c-red">${segs.critico}</div><div class="mc-sub">no vienen y deben</div></div>
+      <div class="mc" onclick="goSeg('fantasma')"><div class="mc-label">Fantasmas</div><div class="mc-value c-purple">${segs.fantasma}</div><div class="mc-sub">>60 días sin actividad</div></div>
+      <div class="mc" onclick="goSeg('reagendar')"><div class="mc-label">Reagendar</div><div class="mc-value c-red">${segs.reagendar||0}</div><div class="mc-sub">faltaron, sin nueva cita</div></div>
+      <div class="mc" onclick="goSeg('reagendado')"><div class="mc-label">Reagendados</div><div class="mc-value c-amber">${segs.reagendado||0}</div><div class="mc-sub">cita confirmada</div></div>
+      <div class="mc" onclick="goSeg('pendiente_inicio')"><div class="mc-label">Pendiente por empezar</div><div class="mc-value c-blue">${segs.pendiente_inicio}</div><div class="mc-sub">aún no han venido (≤14d)</div></div>
+      <div class="mc" onclick="goSeg('sin_iniciar')"><div class="mc-label">Sin iniciar</div><div class="mc-value c-amber">${segs.sin_iniciar}</div><div class="mc-sub">+14 días sin primera cita</div></div>
+      <div class="mc" onclick="goSeg('pronto')"><div class="mc-label">Terminan pronto</div><div class="mc-value c-teal">${segs.pronto}</div><div class="mc-sub">≤2 meses restantes</div></div>
+      <div class="mc" onclick="goSeg('vencido')"><div class="mc-label">Vencidos</div><div class="mc-value c-red">${segs.vencido}</div><div class="mc-sub">tiempo expirado</div></div>
+      <div class="mc" onclick="document.querySelectorAll('.nav-btn')[3].click()"><div class="mc-label">Incompletos</div><div class="mc-value c-gray">${incompletos.length}</div><div class="mc-sub">fichas pendientes</div></div>
+      <div class="mc" onclick="document.querySelectorAll('.nav-btn')[4].click()"><div class="mc-label">Retención</div><div class="mc-value c-teal">${retencion.length}</div><div class="mc-sub">graduados</div></div>
+      <div class="mc" onclick="goContratos()"><div class="mc-label">Contratos este mes</div><div class="mc-value c-green">${contratosEsteMes}</div><div class="mc-sub">iniciaron tratamiento</div></div>
+      <div class="mc"><div class="mc-label">Ingreso mensual</div><div class="mc-value c-green" style="font-size:18px">${fmt(ingMens)}</div><div class="mc-sub">mensualidades activas</div></div>
+      <div class="mc"><div class="mc-label">Cartera activa</div><div class="mc-value c-amber" style="font-size:18px">${fmt(cartera)}</div><div class="mc-sub">saldo por cobrar</div></div>
+    `;
+
+    // Charts
+    renderDashCharts(activos, incompletos);
+  } catch(e) {
+    document.getElementById('dash-metrics').innerHTML=`<div class="empty">Error al conectar.<br><small>${e.message}</small><br><br><button class="btn btn-ghost" onclick="toggleCfg()">Revisar configuración</button></div>`;
+  }
+}
+
+function renderDashCharts(activos, incompletos) {
+  // Brackets vs alineadores
+  const bMetal = activos.filter(p=>p.aparatologia==='brackets_metalicos').length;
+  const bCeram = activos.filter(p=>p.aparatologia==='brackets_ceramicos').length;
+  const aAW = activos.filter(p=>p.aparatologia==='alineadores_aw').length;
+  const aOREC = activos.filter(p=>p.aparatologia==='alineadores_orec').length;
+  const sinApar = activos.length - bMetal - bCeram - aAW - aOREC;
+
+  // Contado vs mensual
+  const contado = activos.filter(p=>p.tipo_pago==='contado').length;
+  const mensual = activos.filter(p=>p.tipo_pago==='mensual').length;
+
+  // Nuevos por mes (últimos 6 meses)
+  const meses = [];
+  for(let i=5;i>=0;i--) {
+    const d = new Date(); d.setMonth(d.getMonth()-i);
+    const ym = d.toISOString().slice(0,7);
+    const label = d.toLocaleDateString('es-MX',{month:'short',year:'2-digit'});
+    const nuevos = activos.filter(p=>p.created_at&&p.created_at.slice(0,7)===ym);
+    meses.push({label, total:nuevos.length, contado:nuevos.filter(p=>p.tipo_pago==='contado').length, mensual:nuevos.filter(p=>p.tipo_pago==='mensual').length});
+  }
+
+  // Doctores
+  const doctorMap = {};
+  activos.forEach(p=>{ const d=p.doctor||'Sin asignar'; doctorMap[d]=(doctorMap[d]||0)+1; });
+  const doctores = Object.entries(doctorMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxDoc = doctores[0]?.[1]||1;
+
+  document.getElementById('dash-charts').innerHTML = `
+    <div class="dash-card">
+      <div class="dash-card-title">Nuevos pacientes — últimos 6 meses</div>
+      <div class="month-grid">
+        ${meses.map(m=>`
+          <div class="month-box">
+            <div class="month-box-label">${m.label}</div>
+            <div class="month-box-val">${m.total}</div>
+            <div class="month-box-sub">${m.contado}C · ${m.mensual}M</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">Distribución de activos</div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">Aparatología</div>
+        ${[['Brackets metálicos',bMetal,'#6a1a8a'],['Brackets cerámicos',bCeram,'#8a1a6a'],['Alineadores AW',aAW,'#0e4c6a'],['Alineadores OREC',aOREC,'#0e5c3a'],['Sin registrar',sinApar,'#aaa']].map(([l,v,c])=>`
+          <div class="bar-row">
+            <span class="bar-label">${l}</span>
+            <div class="bar-bg"><div class="bar-fill" style="width:${activos.length?Math.round(v/activos.length*100):0}%;background:${c}"></div></div>
+            <span class="bar-val">${v}</span>
+          </div>`).join('')}
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">Forma de pago</div>
+        ${[['Mensualidades',mensual,'var(--blue)'],['Contado',contado,'var(--green)']].map(([l,v,c])=>`
+          <div class="bar-row">
+            <span class="bar-label">${l}</span>
+            <div class="bar-bg"><div class="bar-fill" style="width:${activos.length?Math.round(v/activos.length*100):0}%;background:${c}"></div></div>
+            <span class="bar-val">${v}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">Pacientes por doctor</div>
+      ${doctores.map(([d,n])=>`
+        <div class="bar-row">
+          <span class="bar-label" title="${d}">${d}</span>
+          <div class="bar-bg"><div class="bar-fill" style="width:${Math.round(n/maxDoc*100)}%;background:var(--green-mid)"></div></div>
+          <span class="bar-val">${n}</span>
+        </div>`).join('')}
+      ${!doctores.length?'<div style="color:var(--text3);font-size:13px">Sin datos de doctores aún</div>':''}
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">Estado del pool</div>
+      ${[
+        ['Activos',activos.length,'var(--blue)'],
+        ['Incompletos',incompletos.length,'var(--gray)'],
+      ].map(([l,v,c])=>`
+        <div class="bar-row">
+          <span class="bar-label">${l}</span>
+          <div class="bar-bg"><div class="bar-fill" style="width:${(activos.length+incompletos.length)?Math.round(v/(activos.length+incompletos.length)*100):0}%;background:${c}"></div></div>
+          <span class="bar-val">${v}</span>
+        </div>`).join('')}
+      <div style="margin-top:12px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Segmentos activos</div>
+      ${Object.entries({sano:'var(--green)',deudor:'var(--amber)',atrasado:'var(--blue)',critico:'var(--red)',fantasma:'var(--purple)'}).map(([k,c])=>{
+        const count = activos.filter(p=>segmento(p)===k).length;
+        return `<div class="bar-row">
+          <span class="bar-label">${SEG_LABEL[k]}</span>
+          <div class="bar-bg"><div class="bar-fill" style="width:${activos.length?Math.round(count/activos.length*100):0}%;background:${c}"></div></div>
+          <span class="bar-val">${count}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function goContratos() {
+  // Go to pacientes activos filtered by fecha_inicio this month
+  document.querySelectorAll('.nav-btn')[1].click();
+  setTimeout(()=>{
+    // Clear all filters and set search to show only this month's contracts
+    document.getElementById('f-segmento').value='';
+    document.getElementById('f-tipo').value='';
+    document.getElementById('f-apar').value='';
+    document.getElementById('s-activos').value='';
+    searches.activos='';
+    pages.activos=1;
+    // Override load to filter by fecha_inicio this month
+    loadActivosMes();
+  },50);
+}
+
+async function loadActivosMes() {
+  document.getElementById('tbl-activos').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
+  try {
+    const mesHoy = new Date().toISOString().slice(0,7);
+    const data = await sb('GET',`v_resumen?fecha_inicio=gte.${mesHoy}-01&fecha_inicio=lte.${mesHoy}-31&status=neq.incompleto&order=fecha_inicio.desc`);
+    if(!data.length){
+      document.getElementById('tbl-activos').innerHTML='<div class="empty"><div class="empty-icon">📋</div>No hay contratos nuevos este mes.</div>';
+      document.getElementById('pag-activos').innerHTML=`<span style="color:var(--text3);font-size:12px">Contratos de ${mesHoy} — 0 registros</span>`;
+      return;
+    }
+    renderTablaActivos(data);
+    document.getElementById('pag-activos').innerHTML=`<span style="color:var(--text3);font-size:12px">Contratos de ${mesHoy} — ${data.length} registros</span>`;
+  } catch(e){ document.getElementById('tbl-activos').innerHTML=`<div class="empty">Error: ${e.message}</div>`; }
+}
+
+function goSeg(s) {
+  if(s==='reagendar'||s==='reagendado') {
+    document.querySelectorAll('.nav-btn')[6].click();
+    return;
+  }
+  document.querySelectorAll('.nav-btn')[1].click();
+  setTimeout(()=>{
+    document.getElementById('f-segmento').value=s;
+    document.getElementById('f-tipo').value='';
+    document.getElementById('f-apar').value='';
+    document.getElementById('s-activos').value='';
+    searches.activos='';
+    pages.activos=1;
+    loadActivos();
+  },50);
+}
+
+// ─── ACTIVOS ──────────────────────────────────────────────
+async function loadActivos() {
+  document.getElementById('tbl-activos').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
+  try {
+    let q=`v_resumen?status=eq.activo&order=apellido_paterno.asc`;
+    const s=searches.activos;
+    const ft=document.getElementById('f-tipo')?.value||'';
+    const fa=document.getElementById('f-apar')?.value||'';
+    if(s) q+=`&or=(nombre.ilike.*${encodeURIComponent(s)}*,apellido_paterno.ilike.*${encodeURIComponent(s)}*,apellido_materno.ilike.*${encodeURIComponent(s)}*)`;
+    if(ft) q+=`&tipo_pago=eq.${ft}`;
+    if(fa) q+=`&aparatologia=eq.${fa}`;
+    q+=`&limit=500`;
+    let data = await sb('GET',q);
+
+    const fs=document.getElementById('f-segmento')?.value||'';
+    if(fs) data=data.filter(p=>segmento(p)===fs);
+
+    if(!data.length) {
+      document.getElementById('tbl-activos').innerHTML='<div class="empty"><div class="empty-icon">👤</div>No se encontraron pacientes.</div>';
+      document.getElementById('pag-activos').innerHTML='';
+      return;
+    }
+    const total=data.length;
+    const slice=data.slice((pages.activos-1)*PAGE, pages.activos*PAGE);
+    renderTablaActivos(slice);
+    renderPag('activos',total);
+  } catch(e){ document.getElementById('tbl-activos').innerHTML=`<div class="empty">Error: ${e.message}</div>`; }
+}
+
+function renderTablaActivos(rows) {
+  document.getElementById('tbl-activos').innerHTML=`<div class="table-wrap"><table>
+    <thead><tr>
+      <th>Paciente</th><th>Tipo</th><th>Aparat.</th>
+      <th>Mes trat.</th><th>Progreso</th><th>Última visita</th>
+      <th>Mensualidades</th><th>Cobrado</th><th>Saldo</th>
+      <th>Segmento</th><th>Acciones</th>
+    </tr></thead>
+    <tbody>${rows.map(p=>{
+      const cobrado=totalCobradoReal(p), sd=saldo(p);
+      const mes=p.fecha_inicio?monthsElapsed(p.fecha_inicio)+1:'-';
+      const ml=p.fecha_inicio?monthsLeft(p.fecha_inicio,p.duracion_meses||18):'-';
+      const pct=p.fecha_inicio?progPct(p.fecha_inicio,p.duracion_meses||18):0;
+      const ultima=p.ultima_visita_real||p.ultima_visita;
+      const dias=ultima?diffDays(ultima,today()):null;
+      const diasTxt=dias===null?'Sin registro':dias===0?'Hoy':dias===1?'Ayer':`Hace ${dias}d`;
+      const diasColor=dias===null||dias>35?'var(--red)':dias>20?'var(--amber)':'var(--green)';
+      const npTotal=numPagosTotal(p);
+      return `<tr>
+        <td><div class="td-name">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
+        <td><span class="badge ${p.tipo_pago==='contado'||p.tipo_pago==='contado2'?'b-contado':'b-mensual'}">${p.tipo_pago==='contado'?'Contado':p.tipo_pago==='contado2'?'Contado 2P':'Mensual'}</span></td>
+        <td>${p.aparatologia?`<span class="badge b-${p.aparatologia==='primera_fase'?'primera':p.aparatologia}">${{primera_fase:'1ª Fase',brackets_metalicos:'Br. Metálicos',brackets_ceramicos:'Br. Cerámicos',alineadores_aw:'Alin. AW',alineadores_orec:'Alin. OREC'}[p.aparatologia]||p.aparatologia}</span>`:'—'}</td>
+        <td style="font-family:var(--mono);font-size:12px">${mes} / ${p.duracion_meses||'—'}</td>
+        <td>
+          <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${ml<0?'var(--red)':ml<=2?'var(--amber)':'var(--blue)'}"></div></div>
+          <span style="font-size:10px;color:var(--text3)">${pct}%${typeof ml==='number'?` · ${ml<0?'vencido':ml+'m rest.'}`:''}</span>
+        </td>
+        <td style="font-size:12px;color:${diasColor}">${diasTxt}</td>
+        <td style="font-size:12px">${p.tipo_pago==='mensual'
+          ?`<span style="font-weight:500">${npTotal}</span><span style="color:var(--text3)"> / ${p.n_mensualidades||'—'}</span><div style="font-size:10px;color:var(--text3)">${fmt(p.mensualidad)}/mes</div>`
+          :'—'}</td>
+        <td style="font-size:12px">${fmt(cobrado)}</td>
+        <td style="font-size:12px">
+          ${p.tipo_pago==='contado'&&p.estado_pago==='pendiente'?'<span class="badge b-vencido">Pago pendiente</span><br>':''}
+          ${p.tipo_pago==='contado2'?`<span class="badge ${totalCobradoReal(p)>=p.total*0.99?'b-sano':'b-deudor'}">${totalCobradoReal(p)>=p.total*0.99?'Liquidado':'2do pago pendiente'}</span><br>`:''}
+          ${p.tipo_pago==='mensual'&&p.estado_pago==='pendiente'?'<span class="badge b-atraso">Anticipo pendiente</span><br>':''}
+        </td>
+        <td style="font-size:12px;font-weight:500;color:${sd>0?'var(--amber)':'var(--green)'}">${sd>0?fmt(sd):'✓'}</td>
+        <td>${badgeSeg(p)}</td>
+        <td>
+          <div style="display:flex;gap:3px;flex-wrap:wrap">
+            <button class="btn btn-checkin btn-icon" title="Check-in" onclick="openCheckin('${p.id}','${nombreCompleto(p).replace(/'/g,"\\'")}')">✓</button>
+            ${(p.tipo_pago==='mensual'||(p.tipo_pago==='contado'&&(p.total_cobrado||0)<p.total))?`<button class="btn btn-ghost btn-icon" title="Registrar pago" onclick="openPago('${p.id}')">💰</button>`:''}
+            <button class="btn btn-ghost btn-icon" title="Editar" onclick="editarPaciente('${p.id}')">✏️</button>
+            <button class="btn btn-ghost btn-icon" title="Retención" onclick="openRet('${p.id}','${nombreCompleto(p).replace(/'/g,"\\'")}')">🎓</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+// ─── MENSUALIDADES ────────────────────────────────────────
+async function loadMens() {
+  document.getElementById('tbl-mens').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
+  try {
+    let q=`v_resumen?status=eq.activo&tipo_pago=eq.mensual&order=apellido_paterno.asc`;
+    const s=searches.mens;
+    if(s) q+=`&or=(nombre.ilike.*${encodeURIComponent(s)}*,apellido_paterno.ilike.*${encodeURIComponent(s)}*)`;
+    q+=`&limit=500`;
+    let data=await sb('GET',q);
+
+    const fe=document.getElementById('f-mens-estado')?.value||'';
+    if(fe) data=data.filter(p=>{
+      const cobrado=totalCobradoReal(p);
+      if(fe==='liquidado') return cobrado>=p.total;
+      const esp=pagosEsperados(p);
+      if(fe==='aldia') return cobrado>=esp*0.9 && cobrado<p.total;
+      if(fe==='atraso') return cobrado<esp*0.9;
+      return true;
+    });
+
+    if(!data.length){ document.getElementById('tbl-mens').innerHTML='<div class="empty"><div class="empty-icon">📅</div>No hay pacientes con mensualidades.</div>'; return; }
+    const slice=data.slice((pages.mens-1)*PAGE,pages.mens*PAGE);
+    document.getElementById('tbl-mens').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr>
+        <th>Paciente</th><th>Mensualidad</th>
+        <th>Pagadas</th><th>Esperado hoy</th><th>Cobrado</th>
+        <th>Diferencia</th><th>Último pago</th><th>Estado</th><th></th>
+      </tr></thead>
+      <tbody>${slice.map(p=>{
+        const cobrado=totalCobradoReal(p), esp=pagosEsperados(p), diff=cobrado-esp;
+        const npTotal=numPagosTotal(p);
+        const pct=Math.round(npTotal/(p.n_mensualidades||1)*100);
+        return `<tr>
+          <td><div class="td-name">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
+          <td style="font-family:var(--mono)">${fmt(p.mensualidad)}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-weight:500;color:${npTotal>=(p.n_mensualidades||1)?'var(--green)':'var(--text)'}">${npTotal}</span>
+              <span style="color:var(--text3)">/ ${p.n_mensualidades||'—'}</span>
+            </div>
+            <div class="prog-bg" style="margin-top:3px"><div class="prog-fill" style="width:${pct}%;background:${pct>=100?'var(--green)':'var(--blue)'}"></div></div>
+          </td>
+          <td style="font-family:var(--mono)">${fmt(esp)}</td>
+          <td style="font-family:var(--mono)">${fmt(cobrado)}</td>
+          <td style="font-family:var(--mono);font-weight:500;color:${diff>=0?'var(--green)':'var(--red)'}">${diff>=0?'+':''}${fmt(diff)}</td>
+          <td style="font-size:12px;color:var(--text3)">${p.ultimo_pago||'Sin pagos'}</td>
+          <td>${cobrado>=p.total?'<span class="badge b-sano">Liquidado</span>':diff>=-p.mensualidad*0.1?'<span class="badge b-sano">Al día</span>':`<span class="badge b-deudor">Atraso ${fmt(Math.abs(diff))}</span>`}</td>
+          <td><button class="btn btn-ghost btn-icon" onclick="openPago('${p.id}')">💰 Pago</button></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+    renderPag('mens',data.length);
+  } catch(e){ document.getElementById('tbl-mens').innerHTML=`<div class="empty">Error: ${e.message}</div>`; }
+}
+
+// ─── INCOMPLETOS ──────────────────────────────────────────
+async function loadInc() {
+  document.getElementById('tbl-inc').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
+  try {
+    let q=`pacientes?status=eq.incompleto&order=apellido_paterno.asc`;
+    const s=searches.inc;
+    if(s) q+=`&or=(nombre.ilike.*${encodeURIComponent(s)}*,apellido_paterno.ilike.*${encodeURIComponent(s)}*)`;
+    q+=`&limit=${PAGE}&offset=${(pages.inc-1)*PAGE}`;
+    const [data, countRes] = await Promise.all([
+      sb('GET',q),
+      sb('GET',`pacientes?status=eq.incompleto&select=id${s?`&or=(nombre.ilike.*${encodeURIComponent(s)}*,apellido_paterno.ilike.*${encodeURIComponent(s)}*)`:''}`)
+    ]);
+    if(!data.length){ document.getElementById('tbl-inc').innerHTML='<div class="empty"><div class="empty-icon">✅</div>¡Todos los pacientes tienen ficha completa!</div>'; return; }
+    document.getElementById('tbl-inc').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>Paciente</th><th>Teléfono</th><th>Campos faltantes</th><th>Acción</th></tr></thead>
+      <tbody>${data.map(p=>{
+        const faltantes=[];
+        if(!p.fecha_inicio)faltantes.push('Fecha inicio');
+        if(!p.duracion_meses)faltantes.push('Duración');
+        if(!p.tipo_pago)faltantes.push('Forma de pago');
+        if(!p.aparatologia)faltantes.push('Aparatología');
+        if(!p.doctor)faltantes.push('Doctor');
+        if(p.tipo_pago==='mensual'&&!p.mensualidad)faltantes.push('Mensualidad');
+        return `<tr class="row-incomplete">
+          <td><div class="td-name">${nombreCompleto(p)}</div></td>
+          <td style="font-size:13px;color:var(--text3)">${p.telefono||'—'}</td>
+          <td>${faltantes.map(f=>`<span class="badge b-incompleto" style="margin:1px">${f}</span>`).join(' ')||'<span style="color:var(--green)">Listo para activar</span>'}</td>
+          <td><button class="btn btn-amber btn-icon" onclick="editarPaciente('${p.id}')">Completar ficha →</button></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+    renderPag('inc',countRes.length);
+  } catch(e){ document.getElementById('tbl-inc').innerHTML=`<div class="empty">Error: ${e.message}</div>`; }
+}
+
+// ─── RETENCIÓN ────────────────────────────────────────────
+async function loadRetPrimera() {
+  try {
+    const data = await sb('GET','v_resumen?status=eq.retencion&aparatologia=eq.primera_fase&order=fecha_retencion.asc');
+    return data;
+  } catch(e) { return []; }
+}
+
+async function reactivarSegundaFase(id, nombre) {
+  if (!confirm(`¿Reactivar a ${nombre} para segunda fase?\nSe creará un nuevo registro activo manteniendo el historial.`)) return;
+  try {
+    // Get original patient data
+    const orig = await sb('GET', `pacientes?id=eq.${id}`);
+    const p = orig[0];
+    // Create new active record linked by nombre
+    await sb('POST', 'pacientes', {
+      nombre: p.nombre, apellido_paterno: p.apellido_paterno,
+      apellido_materno: p.apellido_materno, telefono: p.telefono,
+      status: 'incompleto', aparatologia: null,
+      notas: `Segunda fase. Primera fase iniciada: ${p.fecha_inicio||'—'}, terminada: ${p.fecha_retencion||'—'}`
+    });
+    showFlash('✓ Paciente reactivado para segunda fase — completar ficha en Incompletos');
+    loadRet();
+    loadDashboard();
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+async function loadRet() {
+  document.getElementById('tbl-ret').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
+  // Load primera fase retencion
+  const retPrimera = await loadRetPrimera();
+  const elP = document.getElementById('tbl-ret-primera');
+  if (retPrimera.length) {
+    const listos = retPrimera.filter(p => {
+      const meses = p.fecha_retencion ? Math.floor(diffDays(p.fecha_retencion, today())/30.44) : 0;
+      return meses >= 12;
+    });
+    const esperando = retPrimera.filter(p => {
+      const meses = p.fecha_retencion ? Math.floor(diffDays(p.fecha_retencion, today())/30.44) : 0;
+      return meses < 12;
+    });
+    elP.innerHTML = `
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        <span class="badge b-primera">Primera Fase</span>
+        <span style="color:var(--text3);font-weight:400">${retPrimera.length} pacientes en retención</span>
+        ${listos.length ? `<span class="badge b-lista-segunda">✓ ${listos.length} listos para 2ª fase</span>` : ''}
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Paciente</th><th>Fin 1ª fase</th><th>Meses en retención</th><th>Estado</th><th></th></tr></thead>
+        <tbody>${retPrimera.map(p => {
+          const meses = p.fecha_retencion ? Math.floor(diffDays(p.fecha_retencion, today())/30.44) : 0;
+          const listo = meses >= 12;
+          const pct = Math.min(100, Math.round(meses/12*100));
+          return `<tr>
+            <td><div class="td-name">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
+            <td style="font-size:12px;color:var(--text2)">${p.fecha_retencion||'—'}</td>
+            <td>
+              <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${listo?'var(--green)':'var(--amber)'}"></div></div>
+              <span style="font-size:11px;color:var(--text3)">${meses} / 12 meses</span>
+            </td>
+            <td>${listo ? '<span class="badge b-lista-segunda">✓ Lista para 2ª fase</span>' : `<span class="badge b-primera">Esperando ${12-meses} mes${12-meses!==1?'es':''} más</span>`}</td>
+            <td>${listo ? `<button class="btn btn-primary btn-icon" onclick="reactivarSegundaFase('${p.id}','${nombreCompleto(p).replace(/'/g,"\'")}')">Iniciar 2ª fase →</button>` : ''}</td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table></div>`;
+  } else {
+    elP.innerHTML = '';
+  }
+  try {
+    let q=`v_resumen?status=eq.retencion&order=fecha_retencion.desc`;
+    const s=searches.ret;
+    if(s) q+=`&or=(nombre.ilike.*${encodeURIComponent(s)}*,apellido_paterno.ilike.*${encodeURIComponent(s)}*)`;
+    q+=`&limit=${PAGE}&offset=${(pages.ret-1)*PAGE}`;
+    const data=await sb('GET',q);
+    if(!data.length){ document.getElementById('tbl-ret').innerHTML='<div class="empty"><div class="empty-icon">🎓</div>No hay pacientes en retención.</div>'; return; }
+    document.getElementById('tbl-ret').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr><th>Paciente</th><th>Tipo</th><th>Total</th><th>Cobrado</th><th>Saldo final</th><th>Retención</th></tr></thead>
+      <tbody>${data.map(p=>{
+        const cobrado=totalCobradoReal(p), sd=saldo(p);
+        return `<tr>
+          <td><div class="td-name">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
+          <td><span class="badge ${p.tipo_pago==='contado'||p.tipo_pago==='contado2'?'b-contado':'b-mensual'}">${p.tipo_pago==='contado'?'Contado':p.tipo_pago==='contado2'?'Contado 2P':'Mensual'}</span></td>
+          <td>${fmt(p.total)}</td><td>${fmt(cobrado)}</td>
+          <td style="font-weight:500;color:${sd>0?'var(--red)':'var(--green)'}">${sd>0?fmt(sd):'Liquidado'}</td>
+          <td style="font-size:12px;color:var(--text3)">${p.fecha_retencion||'—'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+  } catch(e){}
+}
+
+// ─── PAGINATION ───────────────────────────────────────────
+function renderPag(tab,total) {
+  const el=document.getElementById('pag-'+tab);
+  const pages_total=Math.ceil(total/PAGE);
+  if(pages_total<=1){ el.innerHTML=`<span style="color:var(--text3);font-size:12px">${total} registros</span>`; return; }
+  const cur=pages[tab];
+  // Build page number buttons with ellipsis
+  let nums=[];
+  for(let i=1;i<=pages_total;i++){
+    if(i===1||i===pages_total||Math.abs(i-cur)<=2) nums.push(i);
+    else if(nums[nums.length-1]!=='...') nums.push('...');
+  }
+  const btns=nums.map(n=>n==='...'
+    ? `<span style="color:var(--text3);font-size:12px;padding:0 4px">...</span>`
+    : `<button class="pag-btn${n===cur?' cur':''}" onclick="goPage('${tab}',${n})">${n}</button>`
+  ).join('');
+  el.innerHTML=`
+    <span style="color:var(--text3);font-size:12px">${total} registros</span>
+    <button class="pag-btn" onclick="goPage('${tab}',${cur-1})" ${cur<=1?'disabled':''}>←</button>
+    ${btns}
+    <button class="pag-btn" onclick="goPage('${tab}',${cur+1})" ${cur>=pages_total?'disabled':''}>→</button>`;
+}
+function goPage(tab,n) {
+  pages[tab]=n;
+  if(tab==='activos')loadActivos();
+  if(tab==='mens')loadMens();
+  if(tab==='inc')loadInc();
+  if(tab==='ret')loadRet();
+}
+function changePag(tab,d) {
+  pages[tab]=Math.max(1,pages[tab]+d);
+  if(tab==='activos')loadActivos();
+  if(tab==='mens')loadMens();
+  if(tab==='inc')loadInc();
+  if(tab==='ret')loadRet();
+}
+
+// ─── MODAL PACIENTE ───────────────────────────────────────
+function openNuevo() {
+  document.getElementById('m-id').value='';
+  document.getElementById('modal-pac-title').textContent='Nuevo paciente';
+  ['m-nombre','m-ap','m-am','m-tel','m-notas'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('m-apar').value='';
+  document.getElementById('m-tipo').value='';
+  document.getElementById('m-fecha').value=today();
+  document.getElementById('m-ultima').value='';
+  document.getElementById('m-dur').value=18;
+  document.getElementById('m-total').value='';
+  document.getElementById('m-mensualidad').value='';
+  document.getElementById('m-nmens').value='';
+  document.getElementById('m-pagadas').value=0;
+  document.getElementById('m-anticipo') && (document.getElementById('m-anticipo').value='');
+  document.getElementById('m-estado-pago') && (document.getElementById('m-estado-pago').value='pagado');
+  togglePago();
+  document.getElementById('modal-paciente').classList.add('open');
+}
+
+async function editarPaciente(id) {
+  try {
+    const data=await sb('GET',`pacientes?id=eq.${id}`);
+    const p=data[0]; if(!p) return;
+    document.getElementById('m-id').value=p.id;
+    document.getElementById('modal-pac-title').textContent='Editar paciente';
+    document.getElementById('m-nombre').value=p.nombre||'';
+    document.getElementById('m-ap').value=p.apellido_paterno||'';
+    document.getElementById('m-am').value=p.apellido_materno||'';
+    document.getElementById('m-tel').value=p.telefono||'';
+
+    document.getElementById('m-apar').value=p.aparatologia||'';
+    document.getElementById('m-fecha').value=p.fecha_inicio||'';
+    document.getElementById('m-dur').value=p.duracion_meses||18;
+    document.getElementById('m-ultima').value=p.ultima_visita||'';
+    document.getElementById('m-tipo').value=p.tipo_pago||'';
+    document.getElementById('m-total').value=p.total||'';
+    document.getElementById('m-mensualidad').value=p.mensualidad||'';
+    document.getElementById('m-nmens').value=p.n_mensualidades||'';
+    document.getElementById('m-pagadas').value=p.mensualidades_pagadas_inicio||0;
+    document.getElementById('m-anticipo').value=p.anticipo||0;
+    document.getElementById('m-estado-pago').value=p.estado_pago||'pendiente';
+    document.getElementById('m-primer-pago').value=p.primer_pago||0;
+    document.getElementById('m-fecha-primer-pago').value=p.fecha_primer_pago||'';
+    document.getElementById('m-segundo-pago').value=p.segundo_pago||0;
+    document.getElementById('m-notas').value=p.notas||'';
+    togglePago();
+    document.getElementById('modal-paciente').classList.add('open');
+  } catch(e){ alert('Error: '+e.message); }
+}
+
+function togglePago() {
+  const tipo=document.getElementById('m-tipo').value;
+  const m=tipo==='mensual';
+  const c=tipo==='contado';
+  const c2=tipo==='contado2';
+  document.getElementById('w-estado-pago').style.display=(m||c)?'block':'none';
+  document.getElementById('w-anticipo').style.display=m?'block':'none';
+  document.getElementById('w-nmens').style.display=m?'block':'none';
+  document.getElementById('w-mens').style.display=m?'block':'none';
+  document.getElementById('w-pagadas').style.display=m?'block':'none';
+  document.getElementById('w-primer-pago').style.display=c2?'block':'none';
+  document.getElementById('w-fecha-primer-pago').style.display=c2?'block':'none';
+  document.getElementById('w-segundo-pago').style.display=c2?'block':'none';
+  updateCalc();
+}
+function updateCalc() {
+  const tipo=document.getElementById('m-tipo').value;
+  const total=parseFloat(document.getElementById('m-total').value)||0;
+  const anticipo=parseFloat(document.getElementById('m-anticipo')?.value)||0;
+  const n=parseInt(document.getElementById('m-nmens').value)||0;
+  const el=document.getElementById('calc-box');
+  if(tipo==='mensual'&&total>0&&n>0) {
+    const resto=Math.max(0,total-anticipo);
+    const mens=resto>0&&n>0?Math.round(resto/n*100)/100:0;
+    document.getElementById('m-mensualidad').value=mens||'';
+    el.style.display='block';
+    el.innerHTML=`Total: ${fmt(total)} − Anticipo: ${fmt(anticipo)} = <strong>${fmt(resto)}</strong> ÷ ${n} meses = <strong>${fmt(mens)}/mes</strong>`;
+  } else if(tipo==='contado2'&&total>0) {
+    const primer=parseFloat(document.getElementById('m-primer-pago').value)||0;
+    const segundo=parseFloat(document.getElementById('m-segundo-pago').value)||0;
+    if(primer>0||segundo>0) {
+      const suma=primer+segundo;
+      const diff=suma-total;
+      const cuadra=Math.abs(diff)<1;
+      el.style.display='block';
+      el.innerHTML=`${fmt(primer)} + ${fmt(segundo)} = <strong>${fmt(suma)}</strong> ${cuadra?'<span style="color:var(--green)">✓ cuadra exacto</span>':`<span style="color:var(--red)">(${diff>0?'+':''}${fmt(diff)} vs total)</span>`}`;
+    } else el.style.display='none';
+  } else el.style.display='none';
+}
+
+async function guardarPaciente() {
+  const id=document.getElementById('m-id').value;
+  const nombre=document.getElementById('m-nombre').value.trim();
+  const ap=document.getElementById('m-ap').value.trim();
+  const am=document.getElementById('m-am').value.trim();
+  const tel=document.getElementById('m-tel').value.trim();
+
+  const apar=document.getElementById('m-apar').value;
+  const fecha=document.getElementById('m-fecha').value;
+  const dur=parseInt(document.getElementById('m-dur').value)||null;
+  const ultima=document.getElementById('m-ultima').value||null;
+  const tipo=document.getElementById('m-tipo').value;
+  const total=parseFloat(document.getElementById('m-total').value)||0;
+  const anticipo=tipo==='mensual'?parseFloat(document.getElementById('m-anticipo').value)||0:0;
+  const nmens=tipo==='mensual'?parseInt(document.getElementById('m-nmens').value)||0:0;
+  const resto=Math.max(0,total-anticipo);
+  const mensualidad=tipo==='mensual'&&nmens>0?Math.round(resto/nmens*100)/100:0;
+  const pagadas=tipo==='mensual'?parseInt(document.getElementById('m-pagadas').value)||0:0;
+  const estado_pago=document.getElementById('m-estado-pago')?.value||'pendiente';
+  const primer_pago=tipo==='contado2'?parseFloat(document.getElementById('m-primer-pago').value)||0:0;
+  const fecha_primer_pago=tipo==='contado2'?document.getElementById('m-fecha-primer-pago').value||null:null;
+  const segundo_pago=tipo==='contado2'?parseFloat(document.getElementById('m-segundo-pago').value)||0:0;
+  const notas=document.getElementById('m-notas').value.trim();
+
+  if(!nombre||!ap){ alert('Ingresa nombre y apellido paterno'); return; }
+
+  // Determinar si está completo para pasar a activo
+  const completo = fecha && dur && tipo && total > 0 && apar &&
+    (tipo==='contado' || tipo==='contado2' || (tipo==='mensual' && mensualidad>0 && nmens>0));
+
+  const payload = {
+    nombre, apellido_paterno:ap, apellido_materno:am||null,
+    telefono:tel||null, aparatologia:apar||null,
+    fecha_inicio:fecha||null, duracion_meses:dur, ultima_visita:ultima,
+    tipo_pago:tipo||null, total, mensualidad, n_mensualidades:nmens,
+    mensualidades_pagadas_inicio:pagadas, anticipo, estado_pago, primer_pago, fecha_primer_pago, segundo_pago, notas:notas||null,
+    status: completo ? 'activo' : 'incompleto'
+  };
+
+  try {
+    if(id) {
+      await sb('PATCH',`pacientes?id=eq.${id}`,payload);
+    } else {
+      await sb('POST','pacientes',payload);
+    }
+    closeOverlay('modal-paciente');
+    showFlash(completo?'✓ Paciente guardado y activado':'Paciente guardado — ficha incompleta');
+    loadDashboard();
+    if(currentPage==='pacientes') loadActivos();
+    if(currentPage==='incompletos') loadInc();
+  } catch(e){ alert('Error al guardar: '+e.message); }
+}
+
+// ─── CHECK-IN ─────────────────────────────────────────────
+function openCheckin(id,nombre) {
+  document.getElementById('ci-id').value=id;
+  document.getElementById('ci-nombre').textContent=nombre;
+  document.getElementById('ci-fecha').value=today();
+  document.getElementById('ci-nota').value='';
+  document.getElementById('modal-checkin').classList.add('open');
+}
+async function confirmarCheckin() {
+  const id=document.getElementById('ci-id').value;
+  const fecha=document.getElementById('ci-fecha').value;
+  const nota=document.getElementById('ci-nota').value.trim();
+  try {
+    await sb('POST','visitas',{paciente_id:id,fecha,nota:nota||null});
+    closeOverlay('modal-checkin');
+    showFlash('✓ Visita registrada');
+    if(currentPage==='pacientes') loadActivos();
+    if(currentPage==='dashboard') loadDashboard();
+  } catch(e){ alert('Error: '+e.message); }
+}
+
+// ─── PAGO ─────────────────────────────────────────────────
+async function openPago(id) {
+  pagoTarget=id;
+  try {
+    const data=await sb('GET',`v_resumen?id=eq.${id}`);
+    const p=data[0]; if(!p) return;
+    const cobrado=totalCobradoReal(p), sd=saldo(p), npTotal=numPagosTotal(p);
+    document.getElementById('pago-id').value=id;
+    document.getElementById('pago-fecha').value=today();
+    document.getElementById('pago-monto').value=p.tipo_pago==='mensual'?(p.mensualidad||''):sd||'';
+    document.getElementById('pago-nota').value='';
+    document.getElementById('pago-resumen').innerHTML=
+      p.tipo_pago==='mensual'
+        ? `<strong>${nombreCompleto(p)}</strong><br>
+           Mensualidad: ${fmt(p.mensualidad)} · Mensualidades pagadas: <strong>${npTotal} de ${p.n_mensualidades}</strong><br>
+           Total cobrado: ${fmt(cobrado)} · Saldo: <strong style="color:var(--amber)">${fmt(sd)}</strong>`
+        : `<strong>${nombreCompleto(p)}</strong> · <span class="badge b-contado">Contado</span><br>
+           Total del tratamiento: ${fmt(p.total)}<br>
+           Cobrado: ${fmt(cobrado)} · Saldo pendiente: <strong style="color:var(--amber)">${fmt(sd)}</strong>`;
+    document.getElementById('modal-pago').classList.add('open');
+  } catch(e){ alert('Error: '+e.message); }
+}
+async function confirmarPago() {
+  const id=document.getElementById('pago-id').value;
+  const fecha=document.getElementById('pago-fecha').value;
+  const monto=parseFloat(document.getElementById('pago-monto').value);
+  const nota=document.getElementById('pago-nota').value.trim();
+  if(!monto){ alert('Ingresa el monto'); return; }
+  try {
+    await sb('POST','pagos',{paciente_id:id,fecha,monto,nota:nota||null});
+    closeOverlay('modal-pago');
+    showFlash('✓ Pago registrado');
+    if(currentPage==='pacientes') loadActivos();
+    if(currentPage==='mensualidades') loadMens();
+    if(currentPage==='dashboard') loadDashboard();
+  } catch(e){ alert('Error: '+e.message); }
+}
+
+// ─── RETENCIÓN ────────────────────────────────────────────
+function openRet(id,nombre) {
+  retTarget=id;
+  document.getElementById('ret-txt').innerHTML=`¿Pasar a retención a <strong>${nombre}</strong>?<br>Saldrá del pool activo y quedará en el historial.`;
+  document.getElementById('modal-ret').classList.add('open');
+}
+async function confirmarRetencion() {
+  try {
+    await sb('PATCH',`pacientes?id=eq.${retTarget}`,{status:'retencion',fecha_retencion:today()});
+    closeOverlay('modal-ret');
+    showFlash('🎓 Paciente pasado a retención');
+    loadDashboard();
+    if(currentPage==='pacientes') loadActivos();
+  } catch(e){ alert('Error: '+e.message); }
+}
+
+// ─── UTILS ────────────────────────────────────────────────
+function closeOverlay(id){ document.getElementById(id).classList.remove('open'); }
+function showFlash(msg) {
+  const el=document.createElement('div');
+  el.className='flash'; el.textContent=msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),2500);
+}
+
+// ─── KPIs ─────────────────────────────────────────────────
+async function loadKPIs() {
+  document.getElementById('kpi-content').innerHTML='<div class="loading"><span class="spin"></span>Calculando KPIs...</div>';
+  updateKpiMesLabel();
+  try {
+    const [allPac, allPagos] = await Promise.all([
+      sb('GET','v_resumen?select=*'),
+      sb('GET','pagos?select=*&order=fecha.desc')
+    ]);
+
+    const mesActual = kpiMes;
+    const now = new Date(mesActual+'-01T12:00:00');
+    const mesAnterior = (() => { const [y,m] = mesActual.split('-').map(Number); const d=new Date(y,m-2,1); return d.toISOString().slice(0,7); })();
+
+    const activos = allPac.filter(p=>p.status==='activo');
+    const incompletos = allPac.filter(p=>p.status==='incompleto');
+    const retencion = allPac.filter(p=>p.status==='retencion' && p.aparatologia!=='primera_fase');
+    const retPrimera = allPac.filter(p=>p.status==='retencion' && p.aparatologia==='primera_fase');
+    const listoSegunda = retPrimera.filter(p=>p.fecha_retencion && Math.floor(diffDays(p.fecha_retencion,today())/30.44)>=12);
+
+    // Contratos nuevos del mes = pacientes cuya fecha_inicio es este mes
+    const nuevosEsteMes = allPac.filter(p=>p.fecha_inicio&&p.fecha_inicio.slice(0,7)===mesActual);
+    const nuevosContado = nuevosEsteMes.filter(p=>p.tipo_pago==='contado'||p.tipo_pago==='contado2').length;
+    const nuevosMensual = nuevosEsteMes.filter(p=>p.tipo_pago==='mensual').length;
+    const nuevosPrimera = nuevosEsteMes.filter(p=>p.aparatologia==='primera_fase').length;
+
+    // Salidas este mes
+    const salidaEsteMes = allPac.filter(p=>p.fecha_retencion&&p.fecha_retencion.slice(0,7)===mesActual).length;
+
+    // Variación neta
+    const variacion = nuevosEsteMes.length - salidaEsteMes;
+
+    // Cobros este mes
+    const pagosEsteMes = allPagos.filter(p=>p.fecha&&p.fecha.slice(0,7)===mesActual);
+    const cobradoEsteMes = pagosEsteMes.reduce((s,p)=>s+p.monto,0);
+
+    // Anticipos de nuevos este mes (estado pagado)
+    const anticiposCobrados = nuevosEsteMes.filter(p=>p.estado_pago==='pagado'&&p.anticipo>0).reduce((s,p)=>s+(p.anticipo||0),0);
+    const anticiposPendientes = nuevosEsteMes.filter(p=>p.estado_pago==='pendiente').reduce((s,p)=>s+(p.tipo_pago==='contado'?p.total:(p.anticipo||0)),0);
+
+    // Contado pendientes totales
+    const contadoPendiente = activos.filter(p=>p.tipo_pago==='contado'&&p.estado_pago==='pendiente').length;
+
+    // Ingresos esperados vs cobrados mensualidades
+    const ingresosEsperados = activos.filter(p=>p.tipo_pago==='mensual').reduce((s,p)=>s+(p.mensualidad||0),0);
+    const carteraTotal = activos.reduce((s,p)=>s+saldo(p),0);
+
+    // Segmentos
+    const segs={sano:0,pendiente_inicio:0,sin_iniciar:0,reagendar:0,reagendado:0,deudor:0,atrasado:0,critico:0,fantasma:0,pronto:0,vencido:0};
+    activos.forEach(p=>{const s=segmento(p);if(segs[s]!==undefined)segs[s]++;});
+    const pctSanos = activos.length ? Math.round(segs.sano/activos.length*100) : 0;
+    const pctProblema = activos.length ? Math.round((segs.deudor+segs.critico+segs.fantasma)/activos.length*100) : 0;
+
+    // Terminan próximo mes
+    const proximoMes = (() => { const [y,m] = mesActual.split('-').map(Number); const d=new Date(y,m,1); return d.toISOString().slice(0,7); })();
+    const terminanProximo = activos.filter(p=>{
+      if(!p.fecha_inicio||!p.duracion_meses) return false;
+      const fin = addMonths(p.fecha_inicio, p.duracion_meses);
+      return fin.slice(0,7)===proximoMes;
+    }).length;
+
+    // Aparatologia breakdown
+    const aparMap={primera_fase:0,brackets_metalicos:0,brackets_ceramicos:0,alineadores_aw:0,alineadores_orec:0};
+    activos.forEach(p=>{if(p.aparatologia&&aparMap[p.aparatologia]!==undefined)aparMap[p.aparatologia]++;});
+
+    const APAR_LABEL={primera_fase:'1ª Fase',brackets_metalicos:'Br. Metálicos',brackets_ceramicos:'Br. Cerámicos',alineadores_aw:'Alin. AW',alineadores_orec:'Alin. OREC'};
+
+    document.getElementById('kpi-content').innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+        <div style="font-size:12px;color:var(--text3)">Datos al cierre de ${new Date(mesActual+'-28').toLocaleDateString('es-MX',{month:'long',year:'numeric'})}</div>
+      </div>
+      <div class="kpi-grid">
+
+        <div class="kpi-card">
+          <div class="kpi-title">📋 Contratos nuevos del mes</div>
+          <div class="kpi-row"><span class="kpi-label">Nuevos pacientes</span><span class="kpi-val blue">${nuevosEsteMes.length}</span></div>
+          <div class="kpi-row"><span class="kpi-label">— Contado</span><span class="kpi-val">${nuevosContado}</span></div>
+          <div class="kpi-row"><span class="kpi-label">— Mensualidades</span><span class="kpi-val">${nuevosMensual}</span></div>
+          <div class="kpi-row"><span class="kpi-label">— Primera fase</span><span class="kpi-val">${nuevosPrimera}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Salidas (retención)</span><span class="kpi-val">${salidaEsteMes}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Variación neta del pool</span><span class="kpi-val ${variacion>=0?'green':'red'}">${variacion>=0?'+':''}${variacion}</span></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">💰 Cobranza del mes</div>
+          <div class="kpi-row"><span class="kpi-label">Cobrado este mes</span><span class="kpi-val green">${fmt(cobradoEsteMes)}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Ingreso mensual esperado</span><span class="kpi-val">${fmt(ingresosEsperados)}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Brecha de cobranza</span><span class="kpi-val ${cobradoEsteMes>=ingresosEsperados?'green':'amber'}">${fmt(Math.abs(ingresosEsperados-cobradoEsteMes))}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Anticipos cobrados</span><span class="kpi-val green">${fmt(anticiposCobrados)}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Anticipos pendientes</span><span class="kpi-val amber">${fmt(anticiposPendientes)}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Cartera total activa</span><span class="kpi-val amber">${fmt(carteraTotal)}</span></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">🏥 Estado del pool</div>
+          <div class="kpi-row"><span class="kpi-label">Activos totales</span><span class="kpi-val blue">${activos.length}</span></div>
+          <div class="kpi-row"><span class="kpi-label">% Pacientes sanos</span><span class="kpi-val green">${pctSanos}%</span></div>
+          <div class="kpi-row"><span class="kpi-label">% Con problemas</span><span class="kpi-val ${pctProblema>20?'red':'amber'}">${pctProblema}%</span></div>
+          <div class="kpi-row"><span class="kpi-label">Terminan próximo mes</span><span class="kpi-val amber">${terminanProximo}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Incompletos pendientes</span><span class="kpi-val">${incompletos.length}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Contados sin pagar</span><span class="kpi-val ${contadoPendiente>0?'red':'green'}">${contadoPendiente}</span></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">🚨 Alertas</div>
+          <div class="kpi-row"><span class="kpi-label">Deudores</span><span class="kpi-val amber">${segs.deudor}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Sin cita reciente</span><span class="kpi-val blue">${segs.atrasado}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Críticos (no vienen y deben)</span><span class="kpi-val red">${segs.critico}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Fantasmas +60 días</span><span class="kpi-val red">${segs.fantasma}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Tratamientos vencidos</span><span class="kpi-val red">${segs.vencido}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Pendiente por empezar</span><span class="kpi-val blue">${segs.pendiente_inicio}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Sin iniciar +14 días</span><span class="kpi-val amber">${segs.sin_iniciar}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Listos para 2ª fase</span><span class="kpi-val green">${listoSegunda.length}</span></div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">🦷 Por aparatología</div>
+          ${Object.entries(aparMap).map(([k,v])=>`
+          <div class="kpi-row">
+            <span class="kpi-label">${APAR_LABEL[k]||k}</span>
+            <span class="kpi-val">${v} <span style="color:var(--text3);font-size:11px">(${activos.length?Math.round(v/activos.length*100):0}%)</span></span>
+          </div>`).join('')}
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">📊 Retención</div>
+          <div class="kpi-row"><span class="kpi-label">Total graduados</span><span class="kpi-val green">${retencion.length}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Graduados este mes</span><span class="kpi-val green">${salidaEsteMes}</span></div>
+          <div class="kpi-row"><span class="kpi-label">1ª fase en retención</span><span class="kpi-val">${retPrimera.length}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Pendiente por empezar</span><span class="kpi-val blue">${segs.pendiente_inicio}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Sin iniciar +14 días</span><span class="kpi-val amber">${segs.sin_iniciar}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Listos para 2ª fase</span><span class="kpi-val green">${listoSegunda.length}</span></div>
+          <div class="kpi-row"><span class="kpi-label">Esperando 2ª fase</span><span class="kpi-val amber">${retPrimera.length - listoSegunda.length}</span></div>
+        </div>
+
+      </div>`;
+  } catch(e) {
+    document.getElementById('kpi-content').innerHTML=`<div class="empty">Error al cargar KPIs.<br><small>${e.message}</small></div>`;
+  }
+}
+
+// ─── MES KPI ──────────────────────────────────────────────
+let kpiMes = today().slice(0,7); // YYYY-MM
+
+function cambiarMesKPI(dir) {
+  const [y,m] = kpiMes.split('-').map(Number);
+  const d = new Date(y, m-1+dir, 1);
+  kpiMes = d.toISOString().slice(0,7);
+  // Disable next button if current month
+  document.getElementById('kpi-mes-next').disabled = kpiMes >= today().slice(0,7);
+  loadKPIs();
+}
+
+function initKpiMes() {
+  kpiMes = today().slice(0,7);
+  document.getElementById('kpi-mes-next').disabled = true;
+  updateKpiMesLabel();
+}
+
+function updateKpiMesLabel() {
+  const [y,m] = kpiMes.split('-').map(Number);
+  const label = new Date(y,m-1,1).toLocaleDateString('es-MX',{month:'long',year:'numeric'});
+  const el = document.getElementById('kpi-mes-label');
+  if(el) el.textContent = label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+// ─── IMPORTAR REPORTE ─────────────────────────────────────
+async function importarReporte() {
+  const fecha = document.getElementById('imp-fecha').value;
+  const file = document.getElementById('imp-file').files[0];
+  const res = document.getElementById('imp-resultado');
+
+  if (!fecha) { alert('Selecciona la fecha del reporte'); return; }
+  if (!file) { alert('Selecciona un archivo CSV'); return; }
+
+  res.innerHTML = '<div class="loading"><span class="spin"></span>Procesando...</div>';
+
+  const text = await file.text();
+  const lines = text.split(String.fromCharCode(10)).map(l=>l.replace(String.fromCharCode(13),'')).filter(l=>l.trim());
+  if (!lines.length) { res.innerHTML='<div class="empty">El archivo está vacío.</div>'; return; }
+
+  // Detect if first line is header
+  const firstLower = lines[0].toLowerCase();
+  const startIdx = firstLower.includes('nombre') || firstLower.includes('estado') ? 1 : 0;
+  const rows = lines.slice(startIdx).map(l=>l.split(',').map(v=>v.trim().replace(/^"|"$/g,'')));
+
+  let asistencias=0, faltas=0, noEncontrados=[], errores=[];
+
+  // Load all active patients for matching
+  const allPac = await sb('GET','pacientes?status=eq.activo&select=id,nombre,apellido_paterno,apellido_materno,faltas_acumuladas,estado_reagendar');
+
+  function normalizar(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim(); }
+  function buscarPaciente(nombre, ap, am) {
+    return allPac.find(p =>
+      normalizar(p.nombre)===normalizar(nombre) &&
+      normalizar(p.apellido_paterno)===normalizar(ap) &&
+      (!am || !p.apellido_materno || normalizar(p.apellido_materno)===normalizar(am))
+    );
+  }
+
+  for (const row of rows) {
+    if (row.length < 4) continue;
+    const [nombre, ap, am, estado] = row;
+    if (!nombre || !ap) continue;
+
+    const pac = buscarPaciente(nombre, ap, am);
+    if (!pac) { noEncontrados.push(`${nombre} ${ap} ${am||''}`); continue; }
+
+    const estadoLower = estado.toLowerCase();
+    const asistio = estadoLower.includes('asisti');
+
+    try {
+      if (asistio) {
+        // Register checkin
+        await sb('POST','visitas',{paciente_id:pac.id, fecha, nota:'Importado desde reporte'});
+        // Clear reagendar if it was set
+        if (pac.estado_reagendar==='reagendar'||pac.estado_reagendar==='reagendado') {
+          await sb('PATCH',`pacientes?id=eq.${pac.id}`,{estado_reagendar:null});
+        }
+        asistencias++;
+      } else {
+        // Register falta
+        const faltas_nuevas = (pac.faltas_acumuladas||0) + 1;
+        await sb('PATCH',`pacientes?id=eq.${pac.id}`,{
+          estado_reagendar:'reagendar',
+          faltas_acumuladas: faltas_nuevas
+        });
+        faltas++;
+      }
+    } catch(e) { errores.push(`${nombre} ${ap}: ${e.message}`); }
+  }
+
+  // Show results
+  let html = `<div style="background:var(--green-bg);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:10px;font-size:13px">
+    <strong style="color:var(--green)">✓ Reporte procesado</strong><br>
+    <span style="color:var(--text2)">✅ ${asistencias} check-ins registrados · ⚠ ${faltas} faltas marcadas</span>
+  </div>`;
+
+  if (noEncontrados.length) {
+    html += `<div style="background:var(--amber-bg);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:10px;font-size:12px">
+      <strong style="color:var(--amber)">⚠ ${noEncontrados.length} pacientes no encontrados:</strong><br>
+      <span style="color:var(--text2)">${noEncontrados.join('<br>')}</span>
+    </div>`;
+  }
+  if (errores.length) {
+    html += `<div style="background:var(--red-bg);border-radius:var(--r-sm);padding:12px 16px;font-size:12px">
+      <strong style="color:var(--red)">Errores:</strong><br>${errores.join('<br>')}
+    </div>`;
+  }
+  res.innerHTML = html;
+  loadReagendar();
+  loadDashboard();
+}
+
+async function loadReagendar() {
+  try {
+    const data = await sb('GET','v_resumen?status=eq.activo&or=(estado_reagendar.eq.reagendar,estado_reagendar.eq.reagendado)&order=apellido_paterno.asc');
+    const card = document.getElementById('card-reagendar');
+    const tbl = document.getElementById('tbl-reagendar');
+    const cnt = document.getElementById('reagendar-count');
+
+    if (!data.length) { card.style.display='none'; return; }
+    card.style.display='block';
+    const reagendar = data.filter(p=>p.estado_reagendar==='reagendar');
+    const reagendado = data.filter(p=>p.estado_reagendar==='reagendado');
+    cnt.textContent = `${reagendar.length} por reagendar · ${reagendado.length} reagendados`;
+
+    tbl.innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Paciente</th><th>Teléfono</th><th>Faltas acumuladas</th><th>Estado</th><th>Acción</th></tr></thead>
+      <tbody>${data.map(p=>`<tr>
+        <td><div class="td-name">${nombreCompleto(p)}</div></td>
+        <td style="font-size:12px;color:var(--text2)">${p.telefono||'—'}</td>
+        <td style="font-size:13px;font-weight:500;color:${(p.faltas_acumuladas||0)>=3?'var(--red)':'var(--text)'}">${p.faltas_acumuladas||0} ${(p.faltas_acumuladas||0)>=3?'⚠':''}</td>
+        <td><span class="badge ${p.estado_reagendar==='reagendar'?'b-reagendar':'b-reagendado'}">${p.estado_reagendar==='reagendar'?'Reagendar':'Reagendado'}</span></td>
+        <td>${p.estado_reagendar==='reagendar'
+          ?`<button class="btn btn-ghost btn-icon" onclick="marcarReagendado('${p.id}')">✓ Reagendado</button>`
+          :`<button class="btn btn-ghost btn-icon" style="font-size:11px;color:var(--text3)" onclick="marcarReagendar('${p.id}')">Revertir</button>`}
+        </td>
+      </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+  } catch(e) { console.error(e); }
+}
+
+async function marcarReagendado(id) {
+  await sb('PATCH',`pacientes?id=eq.${id}`,{estado_reagendar:'reagendado'});
+  showFlash('✓ Marcado como reagendado');
+  loadReagendar();
+}
+async function marcarReagendar(id) {
+  await sb('PATCH',`pacientes?id=eq.${id}`,{estado_reagendar:'reagendar'});
+  loadReagendar();
+}
+
+// ─── START ────────────────────────────────────────────────
+document.getElementById('imp-fecha').value = new Date().toISOString().slice(0,10);
+init();
+</script>
+</body>
+</html>
