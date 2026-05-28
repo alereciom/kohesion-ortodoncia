@@ -256,7 +256,7 @@ tr.row-incomplete td:first-child{color:var(--text);}
         <option value="reagendar">📞 Reagendar</option>
         <option value="reagendado">📅 Reagendados</option>
         <option value="pendiente_inicio">⏳ Pendiente por empezar</option>
-        <option value="sin_iniciar">⚠ Sin iniciar +14 días</option>
+        <option value="sin_iniciar">⚠ Sin iniciar (15-30 días)</option>
         <option value="sano">✓ Sanos</option>
         <option value="deudor">⚠ Deudores</option>
         <option value="atrasado">📅 Atrasados en citas</option>
@@ -611,7 +611,11 @@ function segmento(p) {
   const tieneVisita = totalVisitas > 0 || !!(p.ultima_visita_real || p.ultima_visita);
   const diasDesdeInicio = p.fecha_inicio ? diffDays(p.fecha_inicio, today()) : 999;
   if (!tieneVisita && diasDesdeInicio >= 0) {
-    return diasDesdeInicio <= 14 ? 'pendiente_inicio' : 'sin_iniciar';
+    if (diasDesdeInicio <= 14) return 'pendiente_inicio';
+    if (diasDesdeInicio <= 30) return 'sin_iniciar';
+    // More than 30 days without any visit = fantasma
+    if (diasDesdeInicio > 60) return 'fantasma';
+    return 'atrasado';
   }
 
   const ultima = p.ultima_visita_real || p.ultima_visita;
@@ -714,7 +718,7 @@ async function loadDashboard() {
     const ingMens = activos.filter(p=>p.tipo_pago==='mensual').reduce((s,p)=>s+(p.mensualidad||0),0);
     const mesHoy = today().slice(0,7);
     // Contratos = todos los pacientes (activos + retención) con fecha_inicio este mes
-    const contratosEsteMes = all.filter(p=>p.fecha_inicio&&p.fecha_inicio.slice(0,7)===mesHoy&&p.status!=='incompleto').length;
+    const contratosEsteMes = allPac.filter(p=>p.fecha_inicio&&p.fecha_inicio.slice(0,7)===mesHoy&&p.status!=='incompleto').length;
     // Dashboard mes selector
     const dashMesLabel = new Date(mesHoy+'-01').toLocaleDateString('es-MX',{month:'long',year:'numeric'});
 
@@ -729,7 +733,7 @@ async function loadDashboard() {
       <div class="mc" onclick="goSeg('reagendar')"><div class="mc-label">Reagendar</div><div class="mc-value c-red">${segs.reagendar||0}</div><div class="mc-sub">faltaron, sin nueva cita</div></div>
       <div class="mc" onclick="goSeg('reagendado')"><div class="mc-label">Reagendados</div><div class="mc-value c-amber">${segs.reagendado||0}</div><div class="mc-sub">cita confirmada</div></div>
       <div class="mc" onclick="goSeg('pendiente_inicio')"><div class="mc-label">Pendiente por empezar</div><div class="mc-value c-blue">${segs.pendiente_inicio}</div><div class="mc-sub">aún no han venido (≤14d)</div></div>
-      <div class="mc" onclick="goSeg('sin_iniciar')"><div class="mc-label">Sin iniciar</div><div class="mc-value c-amber">${segs.sin_iniciar}</div><div class="mc-sub">+14 días sin primera cita</div></div>
+      <div class="mc" onclick="goSeg('sin_iniciar')"><div class="mc-label">Sin iniciar</div><div class="mc-value c-amber">${segs.sin_iniciar}</div><div class="mc-sub">15-30 días sin primera cita</div></div>
       <div class="mc" onclick="goSeg('pronto')"><div class="mc-label">Terminan pronto</div><div class="mc-value c-teal">${segs.pronto}</div><div class="mc-sub">≤2 meses restantes</div></div>
       <div class="mc" onclick="goSeg('vencido')"><div class="mc-label">Vencidos</div><div class="mc-value c-red">${segs.vencido}</div><div class="mc-sub">tiempo expirado</div></div>
       <div class="mc" onclick="document.querySelectorAll('.nav-btn')[3].click()"><div class="mc-label">Incompletos</div><div class="mc-value c-gray">${incompletos.length}</div><div class="mc-sub">fichas pendientes</div></div>
@@ -900,7 +904,7 @@ async function loadActivos() {
     if(s) q+=`&or=(nombre.ilike.*${encodeURIComponent(s)}*,apellido_paterno.ilike.*${encodeURIComponent(s)}*,apellido_materno.ilike.*${encodeURIComponent(s)}*)`;
     if(ft) q+=`&tipo_pago=eq.${ft}`;
     if(fa) q+=`&aparatologia=eq.${fa}`;
-    q+=`&limit=500`;
+    q+=`&limit=2000`;
     let data = await sb('GET',q);
 
     const fs=document.getElementById('f-segmento')?.value||'';
@@ -915,6 +919,9 @@ async function loadActivos() {
     const slice=data.slice((pages.activos-1)*PAGE, pages.activos*PAGE);
     renderTablaActivos(slice);
     renderPag('activos',total);
+    // Show total count in toolbar
+    const countEl = document.getElementById('activos-count');
+    if(countEl) countEl.textContent = `${total} pacientes`;
   } catch(e){ document.getElementById('tbl-activos').innerHTML=`<div class="empty">Error: ${e.message}</div>`; }
 }
 
@@ -977,7 +984,7 @@ async function loadMens() {
     let q=`v_resumen?status=eq.activo&tipo_pago=eq.mensual&order=apellido_paterno.asc`;
     const s=searches.mens;
     if(s) q+=`&or=(nombre.ilike.*${encodeURIComponent(s)}*,apellido_paterno.ilike.*${encodeURIComponent(s)}*)`;
-    q+=`&limit=500`;
+    q+=`&limit=2000`;
     let data=await sb('GET',q);
 
     const fe=document.getElementById('f-mens-estado')?.value||'';
