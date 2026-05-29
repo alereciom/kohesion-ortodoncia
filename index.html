@@ -908,14 +908,8 @@ function goCartera() {
         </tr></thead>
         <tbody>${data.map(p=>{
           const cob=p.total_cobrado||0, sd=Math.max(0,p.total-cob);
-          return \`<tr>
-            <td><div class="td-name">\${nombreCompleto(p)}</div><div class="td-sub">\${p.telefono||''}</div></td>
-            <td><span class="badge \${p.tipo_pago==='contado'?'b-contado':p.tipo_pago==='contado2'?'b-contado':'b-mensual'}">\${p.tipo_pago==='contado'?'Contado':p.tipo_pago==='contado2'?'Contado 2P':'Mensual'}</span></td>
-            <td>\${p.aparatologia?(\`<span class="badge b-\${p.aparatologia}">\${{primera_fase:'1ª Fase',brackets_metalicos:'Br. Metálicos',brackets_ceramicos:'Br. Cerámicos',alineadores_aw:'Alin. AW',alineadores_orec:'Alin. OREC'}[p.aparatologia]||p.aparatologia}</span>\`):'—'}</td>
-            <td style="font-weight:500;font-family:var(--mono)">\${fmt(p.total)}</td>
-            <td style="font-family:var(--mono);color:var(--green)">\${fmt(cob)}</td>
-            <td style="font-weight:500;font-family:var(--mono);color:\${sd>0?'var(--amber)':'var(--green)'}">\${sd>0?fmt(sd):'✓'}</td>
-          </tr>\`;
+          const aparBadge2 = p.aparatologia ? '<span class="badge b-'+p.aparatologia+'">'+({primera_fase:'1ª Fase',brackets_metalicos:'Br. Metálicos',brackets_ceramicos:'Br. Cerámicos',alineadores_aw:'Alin. AW',alineadores_orec:'Alin. OREC'}[p.aparatologia]||p.aparatologia)+'</span>' : '—';
+          return '<tr><td><div class="td-name">'+nombreCompleto(p)+'</div><div class="td-sub">'+(p.telefono||'')+'</div></td><td><span class="badge '+(p.tipo_pago==='contado'||p.tipo_pago==='contado2'?'b-contado':'b-mensual')+'">'+(p.tipo_pago==='contado'?'Contado':p.tipo_pago==='contado2'?'Contado 2P':'Mensual')+'</span></td><td>'+aparBadge2+'</td><td style="font-weight:500;font-family:var(--mono)">'+fmt(p.total)+'</td><td style="font-family:var(--mono);color:var(--green)">'+fmt(cob)+'</td><td style="font-weight:500;font-family:var(--mono);color:'+(sd>0?'var(--amber)':'var(--green)')+'">'+( sd>0?fmt(sd):'✓')+'</td></tr>';
         }).join('')}
         <tr style="background:var(--surface2)">
           <td colspan="3" style="font-weight:600;padding:10px 8px">TOTAL</td>
