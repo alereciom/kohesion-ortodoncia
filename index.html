@@ -650,7 +650,7 @@ function segmento(p) {
   const contado2Vencido = p.tipo_pago==='contado2' && p.fecha_primer_pago &&
     diffDays(p.fecha_primer_pago, today()) > 30 && cobrado < p.total*0.99;
   const deudeActual =
-    (p.tipo_pago==='mensual' && cobrado < esperado*0.9) ||
+    (p.tipo_pago==='mensual' && cobrado < esperado) ||
     (p.tipo_pago==='contado' && cobrado < p.total*0.99) ||
     contado2Vencido;
   const sinVenir = diasSinVenir > 35;
