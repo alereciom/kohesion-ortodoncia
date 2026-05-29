@@ -1049,7 +1049,7 @@ function renderTablaActivos(rows) {
       const diasColor=dias===null||dias>35?'var(--red)':dias>20?'var(--amber)':'var(--green)';
       const npTotal=numPagosTotal(p);
       return `<tr>
-        <td><div class="td-name">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
+        <td style="cursor:pointer" onclick="openPerfil('${p.id}')"><div class="td-name" style="color:var(--blue);text-decoration:underline;text-underline-offset:2px">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
         <td><span class="badge ${p.tipo_pago==='contado'||p.tipo_pago==='contado2'?'b-contado':'b-mensual'}">${p.tipo_pago==='contado'?'Contado':p.tipo_pago==='contado2'?'Contado 2P':'Mensual'}</span></td>
         <td>${p.aparatologia?`<span class="badge b-${p.aparatologia==='primera_fase'?'primera':p.aparatologia}">${{primera_fase:'1ª Fase',brackets_metalicos:'Br. Metálicos',brackets_ceramicos:'Br. Cerámicos',alineadores_aw:'Alin. AW',alineadores_orec:'Alin. OREC'}[p.aparatologia]||p.aparatologia}</span>`:'—'}</td>
         <td style="font-family:var(--mono);font-size:12px">${mes} / ${p.duracion_meses||'—'}</td>
@@ -1072,7 +1072,7 @@ function renderTablaActivos(rows) {
         <td>
           <div style="display:flex;gap:3px;flex-wrap:wrap">
             <button class="btn btn-checkin btn-icon" title="Check-in" onclick="openCheckin('${p.id}','${nombreCompleto(p).replace(/'/g,"\\'")}')">✓</button>
-            ${(p.tipo_pago==='mensual'||(p.tipo_pago==='contado'&&(p.total_cobrado||0)<p.total))?`<button class="btn btn-ghost btn-icon" title="Registrar pago" onclick="openPago('${p.id}')">💰</button>`:''}
+            ${(p.tipo_pago==='mensual'||(p.tipo_pago==='contado'&&(p.total_cobrado||0)<p.total)||(p.tipo_pago==='contado2'&&(p.total_cobrado||0)<p.total*0.99))?`<button class="btn btn-ghost btn-icon" title="Registrar pago" onclick="openPago('${p.id}')">💰</button>`:''}
             <button class="btn btn-ghost btn-icon" title="Editar" onclick="editarPaciente('${p.id}')">✏️</button>
             <button class="btn btn-ghost btn-icon" title="Retención" onclick="openRet('${p.id}','${nombreCompleto(p).replace(/'/g,"\\'")}')">🎓</button>
           </div>
@@ -1115,7 +1115,7 @@ async function loadMens() {
         const npTotal=numPagosTotal(p);
         const pct=Math.round(npTotal/(p.n_mensualidades||1)*100);
         return `<tr>
-          <td><div class="td-name">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
+          <td style="cursor:pointer" onclick="openPerfil('${p.id}')"><div class="td-name" style="color:var(--blue);text-decoration:underline;text-underline-offset:2px">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
           <td style="font-family:var(--mono)">${fmt(p.mensualidad)}</td>
           <td>
             <div style="display:flex;align-items:center;gap:6px">
@@ -1226,7 +1226,7 @@ async function loadRet() {
           const listo = meses >= 12;
           const pct = Math.min(100, Math.round(meses/12*100));
           return `<tr>
-            <td><div class="td-name">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
+            <td style="cursor:pointer" onclick="openPerfil('${p.id}')"><div class="td-name" style="color:var(--blue);text-decoration:underline;text-underline-offset:2px">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
             <td style="font-size:12px;color:var(--text2)">${p.fecha_retencion||'—'}</td>
             <td>
               <div class="prog-bg"><div class="prog-fill" style="width:${pct}%;background:${listo?'var(--green)':'var(--amber)'}"></div></div>
@@ -1253,7 +1253,7 @@ async function loadRet() {
       <tbody>${data.map(p=>{
         const cobrado=totalCobradoReal(p), sd=saldo(p);
         return `<tr>
-          <td><div class="td-name">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
+          <td style="cursor:pointer" onclick="openPerfil('${p.id}')"><div class="td-name" style="color:var(--blue);text-decoration:underline;text-underline-offset:2px">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
           <td><span class="badge ${p.tipo_pago==='contado'||p.tipo_pago==='contado2'?'b-contado':'b-mensual'}">${p.tipo_pago==='contado'?'Contado':p.tipo_pago==='contado2'?'Contado 2P':'Mensual'}</span></td>
           <td>${fmt(p.total)}</td><td>${fmt(cobrado)}</td>
           <td style="font-weight:500;color:${sd>0?'var(--red)':'var(--green)'}">${sd>0?fmt(sd):'Liquidado'}</td>
@@ -1475,13 +1475,17 @@ async function openPago(id) {
     const cobrado=totalCobradoReal(p), sd=saldo(p), npTotal=numPagosTotal(p);
     document.getElementById('pago-id').value=id;
     document.getElementById('pago-fecha').value=today();
-    document.getElementById('pago-monto').value=p.tipo_pago==='mensual'?(p.mensualidad||''):sd||'';
+    document.getElementById('pago-monto').value=p.tipo_pago==='mensual'?(p.mensualidad||''):p.tipo_pago==='contado2'?(p.segundo_pago||sd||''):sd||'';
     document.getElementById('pago-nota').value='';
     document.getElementById('pago-resumen').innerHTML=
       p.tipo_pago==='mensual'
         ? `<strong>${nombreCompleto(p)}</strong><br>
            Mensualidad: ${fmt(p.mensualidad)} · Mensualidades pagadas: <strong>${npTotal} de ${p.n_mensualidades}</strong><br>
            Total cobrado: ${fmt(cobrado)} · Saldo: <strong style="color:var(--amber)">${fmt(sd)}</strong>`
+        : p.tipo_pago==='contado2'
+        ? `<strong>${nombreCompleto(p)}</strong> · <span class="badge b-contado">Contado 2 pagos</span><br>
+           Primer pago: ${fmt(p.primer_pago||0)} · Segundo pago pendiente: <strong style="color:var(--amber)">${fmt(p.segundo_pago||sd)}</strong><br>
+           Total del tratamiento: ${fmt(p.total)} · Cobrado: ${fmt(cobrado)}`
         : `<strong>${nombreCompleto(p)}</strong> · <span class="badge b-contado">Contado</span><br>
            Total del tratamiento: ${fmt(p.total)}<br>
            Cobrado: ${fmt(cobrado)} · Saldo pendiente: <strong style="color:var(--amber)">${fmt(sd)}</strong>`;
@@ -1496,6 +1500,16 @@ async function confirmarPago() {
   if(!monto){ alert('Ingresa el monto'); return; }
   try {
     await sb('POST','pagos',{paciente_id:id,fecha,monto,nota:nota||null});
+    // If contado2 and now fully paid, mark as pagado
+    const pacCheck = await sb('GET',`pacientes?id=eq.${id}&select=tipo_pago,total,estado_pago`);
+    const pac = pacCheck[0];
+    if(pac && pac.tipo_pago==='contado2' && pac.estado_pago==='pendiente') {
+      const allPagosCheck = await sb('GET',`pagos?paciente_id=eq.${id}&select=monto`);
+      const totalPagado = allPagosCheck.reduce((s,p)=>s+p.monto,0);
+      if(totalPagado >= pac.total * 0.99) {
+        await sb('PATCH',`pacientes?id=eq.${id}`,{estado_pago:'pagado'});
+      }
+    }
     closeOverlay('modal-pago');
     showFlash('✓ Pago registrado');
     if(currentPage==='pacientes') loadActivos();
@@ -1722,7 +1736,7 @@ async function loadCobranza() {
         const npTotal=numPagosTotal(p);
         const mesesAtraso=p.mensualidad>0?Math.round(atraso/p.mensualidad):0;
         return `<tr>
-          <td><div class="td-name">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
+          <td style="cursor:pointer" onclick="openPerfil('${p.id}')"><div class="td-name" style="color:var(--blue);text-decoration:underline;text-underline-offset:2px">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
           <td>${p.aparatologia?`<span class="badge b-${p.aparatologia}">${{primera_fase:'1ª Fase',brackets_metalicos:'Br. Metálicos',brackets_ceramicos:'Br. Cerámicos',alineadores_aw:'Alin. AW',alineadores_orec:'Alin. OREC'}[p.aparatologia]||p.aparatologia}</span>`:'—'}</td>
           <td style="font-family:var(--mono)">${fmt(p.mensualidad)}</td>
           <td>
@@ -1744,6 +1758,125 @@ async function loadCobranza() {
     document.getElementById('pag-cobranza').innerHTML=`<span style="color:var(--text3);font-size:12px">${deudores.length} pacientes · Atraso total: ${fmt(totalAtraso)}</span>`;
   } catch(e){
     document.getElementById('tbl-cobranza').innerHTML=`<div class="empty">Error: ${e.message}</div>`;
+  }
+}
+
+// ─── PERFIL PACIENTE ──────────────────────────────────────
+async function openPerfil(id) {
+  document.getElementById('modal-perfil').classList.add('open');
+  document.getElementById('perfil-nombre').textContent = 'Cargando...';
+  document.getElementById('perfil-pagos').innerHTML = '<div class="loading"><span class="spin"></span></div>';
+  document.getElementById('perfil-visitas').innerHTML = '<div class="loading"><span class="spin"></span></div>';
+
+  try {
+    const [pacData, pagosData, visitasData] = await Promise.all([
+      sb('GET', `v_resumen?id=eq.${id}`),
+      sb('GET', `pagos?paciente_id=eq.${id}&order=fecha.desc`),
+      sb('GET', `visitas?paciente_id=eq.${id}&order=fecha.desc`)
+    ]);
+
+    const p = pacData[0]; if(!p) return;
+    const seg = segmento(p);
+    const cobrado = totalCobradoReal(p);
+    const sd = saldo(p);
+    const ml = p.fecha_inicio ? monthsLeft(p.fecha_inicio, p.duracion_meses||18) : null;
+    const pct = p.fecha_inicio ? progPct(p.fecha_inicio, p.duracion_meses||18) : 0;
+    const mesActual = p.fecha_inicio ? monthsElapsed(p.fecha_inicio)+1 : '—';
+    const fechaFin = p.fecha_inicio ? addMonths(p.fecha_inicio, p.duracion_meses||18) : '—';
+
+    // Header
+    document.getElementById('perfil-nombre').innerHTML =
+      `<span>${nombreCompleto(p)}</span> <span class="badge ${SEG_CLASS[seg]||'b-incompleto'}" style="font-size:12px;margin-left:8px">${SEG_LABEL[seg]||seg}</span>`;
+
+    // Info grid
+    const APAR = {primera_fase:'1ª Fase',brackets_metalicos:'Brackets Metálicos',brackets_ceramicos:'Brackets Cerámicos',alineadores_aw:'Alineadores AW',alineadores_orec:'Alineadores OREC'};
+    document.getElementById('perfil-info').innerHTML = [
+      ['📱 Teléfono', p.telefono||'—'],
+      ['🦷 Aparatología', p.aparatologia?APAR[p.aparatologia]:'—'],
+      ['📅 Fecha de inicio', p.fecha_inicio||'—'],
+      ['⏱ Duración estimada', p.duracion_meses ? p.duracion_meses+' meses' : '—'],
+      ['📆 Fecha estimada de fin', fechaFin],
+      ['💳 Forma de pago', p.tipo_pago==='contado'?'Contado':p.tipo_pago==='contado2'?'Contado 2 pagos':'Mensualidades'],
+      ['💰 Total del tratamiento', fmt(p.total)],
+      ['✅ Total cobrado', fmt(cobrado)],
+      ['⏳ Saldo pendiente', fmt(sd)],
+      ['📊 Segmento', SEG_LABEL[seg]||seg],
+    ].map(([label,val])=>`
+      <div style="background:var(--surface2);border-radius:var(--r-sm);padding:8px 10px">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:2px">${label}</div>
+        <div style="font-size:13px;font-weight:500;color:var(--text)">${val}</div>
+      </div>`).join('');
+
+    // Progreso
+    document.getElementById('perfil-progreso').innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:600;color:var(--text)">Progreso del tratamiento</span>
+        <span style="font-size:12px;color:var(--text2)">Mes ${mesActual} de ${p.duracion_meses||'—'}</span>
+      </div>
+      <div class="prog-bg" style="height:8px;margin-bottom:6px">
+        <div class="prog-fill" style="width:${pct}%;height:8px;background:${ml<0?'var(--red)':ml<=2?'var(--amber)':'var(--blue)'}"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)">
+        <span>${pct}% completado</span>
+        <span>${ml===null?'—':ml<0?'Vencido hace '+Math.abs(ml)+' meses':ml+' meses restantes'}</span>
+      </div>
+      ${p.tipo_pago==='mensual'?`
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:600;color:var(--text)">Progreso de pagos</span>
+          <span style="font-size:12px;color:var(--text2)">${numPagosTotal(p)} de ${p.n_mensualidades} mensualidades</span>
+        </div>
+        <div class="prog-bg" style="height:8px">
+          <div class="prog-fill" style="width:${Math.min(100,Math.round(numPagosTotal(p)/(p.n_mensualidades||1)*100))}%;height:8px;background:var(--green)"></div>
+        </div>
+      </div>`:''}`;
+
+    // Pagos
+    if(!pagosData.length) {
+      document.getElementById('perfil-pagos').innerHTML = '<div style="font-size:13px;color:var(--text3);padding:8px 0">Sin pagos registrados.</div>';
+    } else {
+      document.getElementById('perfil-pagos').innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr>
+          <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase">Fecha</th>
+          <th style="text-align:right;padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase">Monto</th>
+          <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase">Nota</th>
+        </tr></thead>
+        <tbody>${pagosData.map(pg=>`<tr>
+          <td style="padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text2)">${pg.fecha}</td>
+          <td style="padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;font-weight:500;font-family:var(--mono)">${fmt(pg.monto)}</td>
+          <td style="padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text3);font-size:12px">${pg.nota||'—'}</td>
+        </tr>`).join('')}
+        <tr style="background:var(--surface2)">
+          <td style="padding:7px 8px;font-weight:600">Total</td>
+          <td style="padding:7px 8px;text-align:right;font-weight:600;font-family:var(--mono)">${fmt(pagosData.reduce((s,pg)=>s+pg.monto,0))}</td>
+          <td></td>
+        </tr>
+        </tbody></table>`;
+    }
+
+    // Visitas
+    if(!visitasData.length) {
+      document.getElementById('perfil-visitas').innerHTML = '<div style="font-size:13px;color:var(--text3);padding:8px 0">Sin visitas registradas.</div>';
+    } else {
+      document.getElementById('perfil-visitas').innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px">
+        ${visitasData.map(v=>`<span style="background:var(--green-bg);color:var(--green);border-radius:var(--r-sm);padding:4px 10px;font-size:12px">✓ ${v.fecha}${v.nota?' · '+v.nota:''}</span>`).join('')}
+      </div>`;
+    }
+
+    // Action buttons
+    const btnPago = document.getElementById('perfil-btn-pago');
+    const btnCheckin = document.getElementById('perfil-btn-checkin');
+    if(p.tipo_pago==='mensual') {
+      btnPago.style.display='inline-block';
+      btnPago.onclick = ()=>{ closeOverlay('modal-perfil'); openPago(id); };
+    } else {
+      btnPago.style.display='none';
+    }
+    btnCheckin.onclick = ()=>{ closeOverlay('modal-perfil'); openCheckin(id, nombreCompleto(p)); };
+
+  } catch(e) {
+    document.getElementById('perfil-nombre').textContent = 'Error al cargar';
+    console.error(e);
   }
 }
 
@@ -1904,5 +2037,39 @@ async function marcarReagendar(id) {
 document.getElementById('imp-fecha').value = new Date().toISOString().slice(0,10);
 init();
 </script>
+<!-- MODAL PERFIL PACIENTE -->
+<div class="overlay" id="modal-perfil">
+<div class="modal" style="max-width:680px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+    <div class="modal-title" id="perfil-nombre" style="margin:0"></div>
+    <button class="btn btn-ghost btn-icon" onclick="closeOverlay('modal-perfil')" style="font-size:16px">✕</button>
+  </div>
+
+  <!-- Info general -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem" id="perfil-info"></div>
+
+  <!-- Progreso tratamiento -->
+  <div style="background:var(--surface2);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:1.25rem" id="perfil-progreso"></div>
+
+  <!-- Historial pagos -->
+  <div style="margin-bottom:1.25rem">
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">Historial de pagos</div>
+    <div id="perfil-pagos"><div class="loading"><span class="spin"></span></div></div>
+  </div>
+
+  <!-- Historial visitas -->
+  <div>
+    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">Historial de visitas</div>
+    <div id="perfil-visitas"><div class="loading"><span class="spin"></span></div></div>
+  </div>
+
+  <div class="modal-actions" style="margin-top:1.25rem">
+    <button class="btn btn-primary" id="perfil-btn-pago" onclick="" style="display:none">💰 Registrar pago</button>
+    <button class="btn btn-checkin" id="perfil-btn-checkin" onclick="">✓ Check-in</button>
+    <button class="btn btn-ghost" onclick="closeOverlay('modal-perfil')">Cerrar</button>
+  </div>
+</div>
+</div>
+
 </body>
 </html>
