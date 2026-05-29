@@ -604,10 +604,9 @@ function progPct(start,dur) {
 }
 function pagosEsperados(p) {
   if (p.tipo_pago!=='mensual') return 0;
-  // Match SQL: FLOOR(days / 30.44) mensualidades should have been paid
-  const dias = diffDays(p.fecha_inicio, today());
-  const meses = Math.floor(dias / 30.44);
-  const mesPago = Math.min(Math.max(0, meses), p.n_mensualidades||1);
+  // Mensualidades based on visits attended, not calendar months
+  const visitasRealizadas = (p.total_visitas||0) + (p.mensualidades_pagadas_inicio||0);
+  const mesPago = Math.min(Math.max(0, visitasRealizadas), p.n_mensualidades||1);
   return mesPago * (p.mensualidad||0);
 }
 function totalCobradoReal(p) {
