@@ -222,6 +222,7 @@ tr.row-incomplete td:first-child{color:var(--text);}
   <button class="nav-btn" onclick="setPage('incompletos',this)">Incompletos</button>
   <button class="nav-btn" onclick="setPage('retencion',this)">Retención</button>
   <button class="nav-btn" onclick="setPage('kpis',this)">KPIs del mes</button>
+  <button class="nav-btn" onclick="setPage('cobranza',this)">Cobranza</button>
   <button class="nav-btn" onclick="setPage('importar',this)">Importar reporte</button>
 </nav>
 
@@ -320,6 +321,27 @@ tr.row-incomplete td:first-child{color:var(--text);}
     </div>
     <div id="tbl-inc"><div class="loading"><span class="spin"></span>Cargando...</div></div>
     <div class="pag" id="pag-inc"></div>
+  </div>
+</div>
+
+<!-- COBRANZA -->
+<div id="page-cobranza" style="display:none">
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:15px;font-weight:600;color:var(--text)">Cobranza — Mensualidades vencidas</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">Pacientes con atraso en mensualidades. Registra el pago directo desde aquí.</div>
+      </div>
+      <div id="cobranza-resumen" style="font-size:13px;font-weight:500;color:var(--amber)"></div>
+    </div>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="s-cobranza" placeholder="Buscar paciente..." oninput="debouncedSearchCobranza()" style="font-family:var(--font);font-size:13px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:8px 10px 8px 34px;color:var(--text);outline:none;width:100%"/>
+      </div>
+    </div>
+    <div id="tbl-cobranza"><div class="loading"><span class="spin"></span>Cargando...</div></div>
+    <div class="pag" id="pag-cobranza"></div>
   </div>
 </div>
 
@@ -504,8 +526,8 @@ tr.row-incomplete td:first-child{color:var(--text);}
 const CFG_KEY = 'kd_cfg_v2';
 let SB_URL = '', SB_KEY = '', cfgVisible = false;
 const PAGE = 30;
-let pages = {activos:1,mens:1,inc:1,ret:1};
-let searches = {activos:'',mens:'',inc:'',ret:''};
+let pages = {activos:1,mens:1,inc:1,ret:1,cobranza:1};
+let searches = {activos:'',mens:'',inc:'',ret:'',cobranza:''};
 let currentPage = 'dashboard';
 let debTimers = {};
 let pagoTarget = null, retTarget = null;
@@ -689,7 +711,7 @@ function setPage(page,el) {
   currentPage=page;
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  ['dashboard','pacientes','mensualidades','incompletos','retencion','kpis','importar'].forEach(p=>{
+  ['dashboard','pacientes','mensualidades','incompletos','retencion','kpis','cobranza','importar'].forEach(p=>{
     document.getElementById('page-'+p).style.display=p===page?'block':'none';
   });
   if(page==='dashboard') loadDashboard();
@@ -699,6 +721,7 @@ function setPage(page,el) {
   if(page==='retencion') loadRet();
   if(page==='kpis') { initKpiMes(); loadKPIs(); }
   if(page==='importar') loadReagendar();
+  if(page==='cobranza') loadCobranza();
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────
@@ -717,6 +740,12 @@ async function loadDashboard() {
     const carteraTotal = activos.reduce((s,p)=>s+p.total,0);
     const ingMens = activos.filter(p=>p.tipo_pago==='mensual').reduce((s,p)=>s+(p.mensualidad||0),0);
     const deudaInicial = activos.filter(p=>p.estado_pago==='pendiente').reduce((s,p)=>s+(p.tipo_pago==='contado'?p.total:p.tipo_pago==='contado2'?p.total:(p.anticipo||0)),0);
+    // Cobrado en mensualidades este mes
+    const mesDash = today().slice(0,7);
+    const allPagos = await sb('GET',`pagos?fecha=gte.${mesDash}-01&fecha=lte.${mesDash}-31&select=monto,paciente_id`);
+    // Only count pagos from mensual patients
+    const activoIds = new Set(activos.filter(p=>p.tipo_pago==='mensual').map(p=>p.id));
+    const cobradoMensMes = allPagos.filter(p=>activoIds.has(p.paciente_id)).reduce((s,p)=>s+p.monto,0);
     // Mensualidades vencidas = lo que deberían haber pagado hasta hoy menos lo cobrado
     const mensVencidas = activos.filter(p=>p.tipo_pago==='mensual'&&p.estado_pago==='pagado').reduce((s,p)=>{
       const cobrado=p.total_cobrado||0;
@@ -746,10 +775,10 @@ async function loadDashboard() {
       <div class="mc" onclick="document.querySelectorAll('.nav-btn')[3].click()"><div class="mc-label">Incompletos</div><div class="mc-value c-gray">${incompletos.length}</div><div class="mc-sub">fichas pendientes</div></div>
       <div class="mc" onclick="document.querySelectorAll('.nav-btn')[4].click()"><div class="mc-label">Retención</div><div class="mc-value c-teal">${retencion.length}</div><div class="mc-sub">graduados</div></div>
       <div class="mc" onclick="goContratos()"><div class="mc-label">Contratos este mes</div><div class="mc-value c-green">${contratosEsteMes}</div><div class="mc-sub">iniciaron tratamiento</div></div>
-      <div class="mc"><div class="mc-label">Cartera contratada</div><div class="mc-value c-blue" style="font-size:16px">${fmt(carteraTotal)}</div><div class="mc-sub">valor total del pool activo</div></div>
-      <div class="mc" onclick="document.querySelectorAll('.nav-btn')[2].click()" style="cursor:pointer"><div class="mc-label">Ingreso mensual esperado</div><div class="mc-value c-green" style="font-size:16px">${fmt(ingMens)}</div><div class="mc-sub">suma de mensualidades</div></div>
+      <div class="mc" onclick="goCartera()" style="cursor:pointer"><div class="mc-label">Cartera contratada</div><div class="mc-value c-blue" style="font-size:16px">${fmt(carteraTotal)}</div><div class="mc-sub">valor total del pool activo</div></div>
+      <div class="mc" onclick="document.querySelectorAll('.nav-btn')[2].click()" style="cursor:pointer"><div class="mc-label">Mensualidades este mes</div><div class="mc-value c-green" style="font-size:16px">${fmt(ingMens)}</div><div class="mc-sub" style="line-height:1.4">Esperado · Cobrado: <span style="color:${cobradoMensMes>=ingMens?'var(--green)':(cobradoMensMes>=ingMens*0.7?'var(--amber)':' var(--red)')}"><strong>${fmt(cobradoMensMes)}</strong></span></div></div>
       <div class="mc" onclick="goAnticipos()" style="cursor:pointer"><div class="mc-label">Deuda inicial pendiente</div><div class="mc-value c-amber" style="font-size:16px">${fmt(deudaInicial)}</div><div class="mc-sub">sin primer pago</div></div>
-      <div class="mc" onclick="goSeg('deudor')" style="cursor:pointer"><div class="mc-label">Mensualidades vencidas</div><div class="mc-value c-red" style="font-size:16px">${fmt(mensVencidas)}</div><div class="mc-sub">atraso acumulado</div></div>
+      <div class="mc" onclick="document.querySelectorAll('.nav-btn')[6].click()" style="cursor:pointer"><div class="mc-label">Mensualidades vencidas</div><div class="mc-value c-red" style="font-size:16px">${fmt(mensVencidas)}</div><div class="mc-sub">atraso acumulado</div></div>
     `;
 
     // Charts
@@ -852,6 +881,51 @@ function renderDashCharts(activos, incompletos) {
       }).join('')}
     </div>
   `;
+}
+
+function goCartera() {
+  document.querySelectorAll('.nav-btn')[1].click();
+  setTimeout(async ()=>{
+    document.getElementById('f-segmento').value='';
+    document.getElementById('f-tipo').value='';
+    document.getElementById('f-apar').value='';
+    document.getElementById('s-activos').value='';
+    searches.activos='';
+    pages.activos=1;
+    // Load all activos sorted by total desc
+    document.getElementById('tbl-activos').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
+    try {
+      const data = await sb('GET','v_resumen?status=eq.activo&order=total.desc&limit=2000');
+      if(!data.length){ document.getElementById('tbl-activos').innerHTML='<div class="empty">Sin datos.</div>'; return; }
+      // Render custom table for cartera
+      const total = data.reduce((s,p)=>s+p.total,0);
+      const cobrado = data.reduce((s,p)=>s+(p.total_cobrado||0),0);
+      document.getElementById('tbl-activos').innerHTML=`<div class="table-wrap"><table>
+        <thead><tr>
+          <th>Paciente</th><th>Tipo</th><th>Aparatología</th>
+          <th>Total tratamiento</th><th>Cobrado</th><th>Saldo</th>
+        </tr></thead>
+        <tbody>${data.map(p=>{
+          const cob=p.total_cobrado||0, sd=Math.max(0,p.total-cob);
+          return \`<tr>
+            <td><div class="td-name">\${nombreCompleto(p)}</div><div class="td-sub">\${p.telefono||''}</div></td>
+            <td><span class="badge \${p.tipo_pago==='contado'?'b-contado':p.tipo_pago==='contado2'?'b-contado':'b-mensual'}">\${p.tipo_pago==='contado'?'Contado':p.tipo_pago==='contado2'?'Contado 2P':'Mensual'}</span></td>
+            <td>\${p.aparatologia?(\`<span class="badge b-\${p.aparatologia}">\${{primera_fase:'1ª Fase',brackets_metalicos:'Br. Metálicos',brackets_ceramicos:'Br. Cerámicos',alineadores_aw:'Alin. AW',alineadores_orec:'Alin. OREC'}[p.aparatologia]||p.aparatologia}</span>\`):'—'}</td>
+            <td style="font-weight:500;font-family:var(--mono)">\${fmt(p.total)}</td>
+            <td style="font-family:var(--mono);color:var(--green)">\${fmt(cob)}</td>
+            <td style="font-weight:500;font-family:var(--mono);color:\${sd>0?'var(--amber)':'var(--green)'}">\${sd>0?fmt(sd):'✓'}</td>
+          </tr>\`;
+        }).join('')}
+        <tr style="background:var(--surface2)">
+          <td colspan="3" style="font-weight:600;padding:10px 8px">TOTAL</td>
+          <td style="font-weight:600;font-family:var(--mono)">\${fmt(total)}</td>
+          <td style="font-weight:600;font-family:var(--mono);color:var(--green)">\${fmt(cobrado)}</td>
+          <td style="font-weight:600;font-family:var(--mono);color:var(--amber)">\${fmt(Math.max(0,total-cobrado))}</td>
+        </tr>
+        </tbody></table></div>`;
+      document.getElementById('pag-activos').innerHTML=`<span style="color:var(--text3);font-size:12px">Cartera contratada — \${data.length} pacientes · \${fmt(total)}</span>`;
+    } catch(e){ document.getElementById('tbl-activos').innerHTML=`<div class="empty">Error: \${e.message}</div>`; }
+  },50);
 }
 
 function goAnticipos() {
@@ -1431,6 +1505,7 @@ async function confirmarPago() {
     showFlash('✓ Pago registrado');
     if(currentPage==='pacientes') loadActivos();
     if(currentPage==='mensualidades') loadMens();
+    if(currentPage==='cobranza') loadCobranza();
     if(currentPage==='dashboard') loadDashboard();
   } catch(e){ alert('Error: '+e.message); }
 }
@@ -1605,6 +1680,75 @@ async function loadKPIs() {
       </div>`;
   } catch(e) {
     document.getElementById('kpi-content').innerHTML=`<div class="empty">Error al cargar KPIs.<br><small>${e.message}</small></div>`;
+  }
+}
+
+// ─── COBRANZA ─────────────────────────────────────────────
+async function loadCobranza() {
+  document.getElementById('tbl-cobranza').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
+  try {
+    let q='v_resumen?status=eq.activo&tipo_pago=eq.mensual&estado_pago=eq.pagado&order=apellido_paterno.asc&limit=2000';
+    const s = searches.cobranza;
+    if(s) q+=`&or=(nombre.ilike.*${encodeURIComponent(s)}*,apellido_paterno.ilike.*${encodeURIComponent(s)}*)`;
+    const data = await sb('GET', q);
+
+    // Filter only those with actual debt
+    const deudores = data.filter(p => {
+      const cobrado = p.total_cobrado||0;
+      const esp = pagosEsperados(p);
+      return cobrado < esp*0.9;
+    });
+
+    if(!deudores.length){
+      document.getElementById('tbl-cobranza').innerHTML='<div class="empty"><div class="empty-icon">✅</div>No hay mensualidades vencidas. ¡Todo al día!</div>';
+      document.getElementById('cobranza-resumen').textContent='';
+      document.getElementById('pag-cobranza').innerHTML='';
+      return;
+    }
+
+    const totalAtraso = deudores.reduce((s,p)=>{
+      const cobrado=p.total_cobrado||0, esp=pagosEsperados(p);
+      return s+Math.max(0,esp-cobrado);
+    },0);
+
+    document.getElementById('cobranza-resumen').innerHTML=
+      `${deudores.length} pacientes con atraso · Total vencido: <strong>${fmt(totalAtraso)}</strong>`;
+
+    document.getElementById('tbl-cobranza').innerHTML=`<div class="table-wrap"><table>
+      <thead><tr>
+        <th>Paciente</th><th>Aparatología</th><th>Mensualidad</th>
+        <th>Mensualidades pagadas</th><th>Esperado hoy</th>
+        <th>Cobrado</th><th>Atraso</th><th>Último pago</th><th></th>
+      </tr></thead>
+      <tbody>${deudores.map(p=>{
+        const cobrado=p.total_cobrado||0;
+        const esp=pagosEsperados(p);
+        const atraso=Math.max(0,esp-cobrado);
+        const npTotal=numPagosTotal(p);
+        const mesesAtraso=p.mensualidad>0?Math.round(atraso/p.mensualidad):0;
+        return `<tr>
+          <td><div class="td-name">${nombreCompleto(p)}</div><div class="td-sub">${p.telefono||''}</div></td>
+          <td>${p.aparatologia?`<span class="badge b-${p.aparatologia}">${{primera_fase:'1ª Fase',brackets_metalicos:'Br. Metálicos',brackets_ceramicos:'Br. Cerámicos',alineadores_aw:'Alin. AW',alineadores_orec:'Alin. OREC'}[p.aparatologia]||p.aparatologia}</span>`:'—'}</td>
+          <td style="font-family:var(--mono)">${fmt(p.mensualidad)}</td>
+          <td>
+            <span style="font-weight:500">${npTotal}</span>
+            <span style="color:var(--text3)"> / ${p.n_mensualidades}</span>
+          </td>
+          <td style="font-family:var(--mono)">${fmt(esp)}</td>
+          <td style="font-family:var(--mono);color:var(--green)">${fmt(cobrado)}</td>
+          <td>
+            <span style="font-weight:600;color:var(--red)">${fmt(atraso)}</span>
+            <div style="font-size:10px;color:var(--text3)">${mesesAtraso} mes${mesesAtraso!==1?'es':''} atrasado</div>
+          </td>
+          <td style="font-size:12px;color:var(--text3)">${p.ultimo_pago||'Sin pagos'}</td>
+          <td><button class="btn btn-primary btn-icon" onclick="openPago('${p.id}')">💰 Pago</button></td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+    </table></div>`;
+    document.getElementById('pag-cobranza').innerHTML=`<span style="color:var(--text3);font-size:12px">${deudores.length} pacientes · Atraso total: ${fmt(totalAtraso)}</span>`;
+  } catch(e){
+    document.getElementById('tbl-cobranza').innerHTML=`<div class="empty">Error: ${e.message}</div>`;
   }
 }
 
