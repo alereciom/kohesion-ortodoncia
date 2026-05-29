@@ -604,16 +604,17 @@ function progPct(start,dur) {
 }
 function pagosEsperados(p) {
   if (p.tipo_pago!=='mensual') return 0;
-  // Mensualidades start the month after inicio
-  const mesesDesdeInicio = monthsElapsed(p.fecha_inicio);
-  const mesPago = Math.max(0, Math.min(mesesDesdeInicio, p.n_mensualidades||1));
-  return mesPago*(p.mensualidad||0);
+  // Match SQL: FLOOR(days / 30.44) mensualidades should have been paid
+  const dias = diffDays(p.fecha_inicio, today());
+  const meses = Math.floor(dias / 30.44);
+  const mesPago = Math.min(Math.max(0, meses), p.n_mensualidades||1);
+  return mesPago * (p.mensualidad||0);
 }
 function totalCobradoReal(p) {
   const pagosRegistrados = p.total_cobrado||0;
   const pagosInicio = (p.mensualidades_pagadas_inicio||0)*(p.mensualidad||0);
-  // Add anticipo if already paid
-  const anticipoPagado = (p.anticipo||0) > 0 && p.estado_pago==='pagado' ? (p.anticipo||0) : 0;
+  // Anticipo: only add if NOT already in pagos (pagosRegistrados === 0)
+  const anticipoPagado = (p.anticipo||0) > 0 && p.estado_pago==='pagado' && pagosRegistrados===0 ? (p.anticipo||0) : 0;
   // For contado, if estado_pago=pagado count full total as cobrado (unless pagos registered)
   const contadoPagado = p.tipo_pago==='contado' && p.estado_pago==='pagado' && pagosRegistrados===0 ? p.total : 0;
   // contado2: primer pago + segundo si ya pasaron 30 días y está registrado
