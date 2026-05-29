@@ -1763,20 +1763,28 @@ async function loadCobranza() {
 }
 
 // ─── PERFIL PACIENTE ──────────────────────────────────────
+let perfilPacienteId = null;
+
+function perfilTab(tab) {
+  ['info','pagos','visitas'].forEach(t => {
+    document.getElementById('perfil-tab-'+t).style.display = t===tab?'block':'none';
+    document.getElementById('ptab-'+t).classList.toggle('active', t===tab);
+  });
+  if(tab==='pagos') renderPerfilPagos();
+  if(tab==='visitas') renderPerfilVisitas();
+}
+
 async function openPerfil(id) {
+  perfilPacienteId = id;
   document.getElementById('modal-perfil').classList.add('open');
   document.getElementById('perfil-nombre').textContent = 'Cargando...';
-  document.getElementById('perfil-pagos').innerHTML = '<div class="loading"><span class="spin"></span></div>';
-  document.getElementById('perfil-visitas').innerHTML = '<div class="loading"><span class="spin"></span></div>';
+  perfilTab('info');
+  document.getElementById('pp-fecha').value = today();
 
   try {
-    const [pacData, pagosData, visitasData] = await Promise.all([
-      sb('GET', `v_resumen?id=eq.${id}`),
-      sb('GET', `pagos?paciente_id=eq.${id}&order=fecha.desc`),
-      sb('GET', `visitas?paciente_id=eq.${id}&order=fecha.desc`)
-    ]);
-
+    const pacData = await sb('GET', `v_resumen?id=eq.${id}`);
     const p = pacData[0]; if(!p) return;
+    
     const seg = segmento(p);
     const cobrado = totalCobradoReal(p);
     const sd = saldo(p);
@@ -1784,101 +1792,241 @@ async function openPerfil(id) {
     const pct = p.fecha_inicio ? progPct(p.fecha_inicio, p.duracion_meses||18) : 0;
     const mesActual = p.fecha_inicio ? monthsElapsed(p.fecha_inicio)+1 : '—';
     const fechaFin = p.fecha_inicio ? addMonths(p.fecha_inicio, p.duracion_meses||18) : '—';
-
-    // Header
-    document.getElementById('perfil-nombre').innerHTML =
-      `<span>${nombreCompleto(p)}</span> <span class="badge ${SEG_CLASS[seg]||'b-incompleto'}" style="font-size:12px;margin-left:8px">${SEG_LABEL[seg]||seg}</span>`;
-
-    // Info grid
     const APAR = {primera_fase:'1ª Fase',brackets_metalicos:'Brackets Metálicos',brackets_ceramicos:'Brackets Cerámicos',alineadores_aw:'Alineadores AW',alineadores_orec:'Alineadores OREC'};
-    document.getElementById('perfil-info').innerHTML = [
-      ['📱 Teléfono', p.telefono||'—'],
-      ['🦷 Aparatología', p.aparatologia?APAR[p.aparatologia]:'—'],
-      ['📅 Fecha de inicio', p.fecha_inicio||'—'],
-      ['⏱ Duración estimada', p.duracion_meses ? p.duracion_meses+' meses' : '—'],
-      ['📆 Fecha estimada de fin', fechaFin],
-      ['💳 Forma de pago', p.tipo_pago==='contado'?'Contado':p.tipo_pago==='contado2'?'Contado 2 pagos':'Mensualidades'],
-      ['💰 Total del tratamiento', fmt(p.total)],
-      ['✅ Total cobrado', fmt(cobrado)],
-      ['⏳ Saldo pendiente', fmt(sd)],
-      ['📊 Segmento', SEG_LABEL[seg]||seg],
-    ].map(([label,val])=>`
-      <div style="background:var(--surface2);border-radius:var(--r-sm);padding:8px 10px">
-        <div style="font-size:10px;color:var(--text3);margin-bottom:2px">${label}</div>
-        <div style="font-size:13px;font-weight:500;color:var(--text)">${val}</div>
-      </div>`).join('');
+
+    document.getElementById('perfil-nombre').innerHTML =
+      `${nombreCompleto(p)} <span class="badge ${SEG_CLASS[seg]||'b-incompleto'}" style="font-size:11px;margin-left:6px">${SEG_LABEL[seg]||seg}</span>`;
 
     // Progreso
     document.getElementById('perfil-progreso').innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:12px;font-weight:600;color:var(--text)">Progreso del tratamiento</span>
-        <span style="font-size:12px;color:var(--text2)">Mes ${mesActual} de ${p.duracion_meses||'—'}</span>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:12px;font-weight:600">Tratamiento — Mes ${mesActual} de ${p.duracion_meses||'—'}</span>
+        <span style="font-size:12px;color:var(--text2)">${ml===null?'—':ml<0?'Vencido':ml+' meses restantes'}</span>
       </div>
-      <div class="prog-bg" style="height:8px;margin-bottom:6px">
-        <div class="prog-fill" style="width:${pct}%;height:8px;background:${ml<0?'var(--red)':ml<=2?'var(--amber)':'var(--blue)'}"></div>
+      <div class="prog-bg" style="height:7px;margin-bottom:4px">
+        <div class="prog-fill" style="width:${pct}%;height:7px;background:${ml<0?'var(--red)':ml<=2?'var(--amber)':'var(--blue)'}"></div>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)">
-        <span>${pct}% completado</span>
-        <span>${ml===null?'—':ml<0?'Vencido hace '+Math.abs(ml)+' meses':ml+' meses restantes'}</span>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:${p.tipo_pago==='mensual'?'10px':'0'}">
+        <span>${pct}% · Fecha fin estimada: ${fechaFin}</span>
+        <span>💰 ${fmt(cobrado)} cobrado · Saldo: ${fmt(sd)}</span>
       </div>
       ${p.tipo_pago==='mensual'?`
-      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <span style="font-size:12px;font-weight:600;color:var(--text)">Progreso de pagos</span>
-          <span style="font-size:12px;color:var(--text2)">${numPagosTotal(p)} de ${p.n_mensualidades} mensualidades</span>
+      <div style="border-top:1px solid var(--border);padding-top:8px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:12px;font-weight:600">Pagos — ${numPagosTotal(p)} de ${p.n_mensualidades} mensualidades</span>
+          <span style="font-size:12px;color:var(--text2)">${fmt(p.mensualidad)}/mes</span>
         </div>
-        <div class="prog-bg" style="height:8px">
-          <div class="prog-fill" style="width:${Math.min(100,Math.round(numPagosTotal(p)/(p.n_mensualidades||1)*100))}%;height:8px;background:var(--green)"></div>
+        <div class="prog-bg" style="height:7px">
+          <div class="prog-fill" style="width:${Math.min(100,Math.round(numPagosTotal(p)/(p.n_mensualidades||1)*100))}%;height:7px;background:var(--green)"></div>
         </div>
       </div>`:''}`;
 
-    // Pagos
-    if(!pagosData.length) {
-      document.getElementById('perfil-pagos').innerHTML = '<div style="font-size:13px;color:var(--text3);padding:8px 0">Sin pagos registrados.</div>';
-    } else {
-      document.getElementById('perfil-pagos').innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead><tr>
-          <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase">Fecha</th>
-          <th style="text-align:right;padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase">Monto</th>
-          <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase">Nota</th>
-        </tr></thead>
-        <tbody>${pagosData.map(pg=>`<tr>
-          <td style="padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text2)">${pg.fecha}</td>
-          <td style="padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;font-weight:500;font-family:var(--mono)">${fmt(pg.monto)}</td>
-          <td style="padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text3);font-size:12px">${pg.nota||'—'}</td>
-        </tr>`).join('')}
-        <tr style="background:var(--surface2)">
-          <td style="padding:7px 8px;font-weight:600">Total</td>
-          <td style="padding:7px 8px;text-align:right;font-weight:600;font-family:var(--mono)">${fmt(pagosData.reduce((s,pg)=>s+pg.monto,0))}</td>
-          <td></td>
-        </tr>
-        </tbody></table>`;
-    }
+    // Form tratamiento
+    document.getElementById('perfil-form-trat').innerHTML = `
+      <div class="fg"><label>Aparatología</label>
+        <select id="pe-apar">
+          <option value="">Seleccionar...</option>
+          ${['primera_fase','brackets_metalicos','brackets_ceramicos','alineadores_aw','alineadores_orec'].map(a=>`<option value="${a}" ${p.aparatologia===a?'selected':''}>${APAR[a]}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>Fecha de inicio</label><input type="date" id="pe-fecha" value="${p.fecha_inicio||''}"/></div>
+      <div class="fg"><label>Duración estimada (meses)</label><input type="number" id="pe-dur" value="${p.duracion_meses||''}" min="1" max="60"/></div>
+      <div class="fg"><label>Última visita registrada</label><input type="date" id="pe-ultima" value="${p.ultima_visita||''}"/></div>`;
 
-    // Visitas
-    if(!visitasData.length) {
-      document.getElementById('perfil-visitas').innerHTML = '<div style="font-size:13px;color:var(--text3);padding:8px 0">Sin visitas registradas.</div>';
-    } else {
-      document.getElementById('perfil-visitas').innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px">
-        ${visitasData.map(v=>`<span style="background:var(--green-bg);color:var(--green);border-radius:var(--r-sm);padding:4px 10px;font-size:12px">✓ ${v.fecha}${v.nota?' · '+v.nota:''}</span>`).join('')}
-      </div>`;
-    }
+    // Form pago
+    const esMensual = p.tipo_pago==='mensual';
+    const esContado2 = p.tipo_pago==='contado2';
+    document.getElementById('perfil-form-pago').innerHTML = `
+      <div class="fg"><label>Forma de pago</label>
+        <select id="pe-tipo" onchange="perfilTogglePago()">
+          <option value="contado" ${p.tipo_pago==='contado'?'selected':''}>Contado</option>
+          <option value="contado2" ${esContado2?'selected':''}>Contado 2 pagos</option>
+          <option value="mensual" ${esMensual?'selected':''}>Mensualidades</option>
+        </select>
+      </div>
+      <div class="fg"><label>Monto total ($)</label><input type="number" id="pe-total" value="${p.total||''}" oninput="perfilUpdateCalc()"/></div>
+      <div class="fg"><label>Estado pago inicial</label>
+        <select id="pe-estado">
+          <option value="pagado" ${p.estado_pago==='pagado'?'selected':''}>✅ Pagado</option>
+          <option value="pendiente" ${p.estado_pago==='pendiente'?'selected':''}>⏳ Pendiente</option>
+        </select>
+      </div>
+      <div class="fg" id="pe-w-anticipo" style="display:${esMensual?'flex':'none'}"><label>Anticipo ($)</label><input type="number" id="pe-anticipo" value="${p.anticipo||0}" oninput="perfilUpdateCalc()"/></div>
+      <div class="fg" id="pe-w-nmens" style="display:${esMensual?'flex':'none'}"><label>Número de mensualidades</label><input type="number" id="pe-nmens" value="${p.n_mensualidades||''}" oninput="perfilUpdateCalc()"/></div>
+      <div class="fg" id="pe-w-mens" style="display:${esMensual?'flex':'none'}"><label>Mensualidad (calculada)</label><input type="number" id="pe-mens" value="${p.mensualidad||''}" readonly style="background:var(--surface3);color:var(--text2)"/></div>
+      <div class="fg" id="pe-w-pagadas" style="display:${esMensual?'flex':'none'}"><label>Mensualidades ya pagadas</label><input type="number" id="pe-pagadas" value="${p.mensualidades_pagadas_inicio||0}" min="0"/><span class="hint">Históricas, antes del sistema</span></div>
+      <div class="fg" id="pe-w-primer" style="display:${esContado2?'flex':'none'}"><label>Primer pago ($)</label><input type="number" id="pe-primer" value="${p.primer_pago||0}"/></div>
+      <div class="fg" id="pe-w-segundo" style="display:${esContado2?'flex':'none'}"><label>Segundo pago ($)</label><input type="number" id="pe-segundo" value="${p.segundo_pago||0}"/></div>`;
+    
+    document.getElementById('perfil-calc').style.display='none';
+    perfilUpdateCalc();
 
-    // Action buttons
-    const btnPago = document.getElementById('perfil-btn-pago');
-    const btnCheckin = document.getElementById('perfil-btn-checkin');
-    if(p.tipo_pago==='mensual') {
-      btnPago.style.display='inline-block';
-      btnPago.onclick = ()=>{ closeOverlay('modal-perfil'); openPago(id); };
-    } else {
-      btnPago.style.display='none';
-    }
-    btnCheckin.onclick = ()=>{ closeOverlay('modal-perfil'); openCheckin(id, nombreCompleto(p)); };
+    // Checkin button
+    document.getElementById('perfil-btn-checkin').onclick = ()=>{ closeOverlay('modal-perfil'); openCheckin(id, nombreCompleto(p)); };
+
+    // Store pagos/visitas for later tabs
+    window._perfilData = { id, p };
 
   } catch(e) {
     document.getElementById('perfil-nombre').textContent = 'Error al cargar';
     console.error(e);
   }
+}
+
+function perfilTogglePago() {
+  const tipo = document.getElementById('pe-tipo').value;
+  const m = tipo==='mensual', c2 = tipo==='contado2';
+  document.getElementById('pe-w-anticipo').style.display = m?'flex':'none';
+  document.getElementById('pe-w-nmens').style.display = m?'flex':'none';
+  document.getElementById('pe-w-mens').style.display = m?'flex':'none';
+  document.getElementById('pe-w-pagadas').style.display = m?'flex':'none';
+  document.getElementById('pe-w-primer').style.display = c2?'flex':'none';
+  document.getElementById('pe-w-segundo').style.display = c2?'flex':'none';
+  perfilUpdateCalc();
+}
+
+function perfilUpdateCalc() {
+  const tipo = document.getElementById('pe-tipo')?.value;
+  const total = parseFloat(document.getElementById('pe-total')?.value)||0;
+  const anticipo = parseFloat(document.getElementById('pe-anticipo')?.value)||0;
+  const nmens = parseInt(document.getElementById('pe-nmens')?.value)||0;
+  const el = document.getElementById('perfil-calc');
+  if(tipo==='mensual' && total>0 && nmens>0) {
+    const resto = Math.max(0,total-anticipo);
+    const mens = nmens>0 ? Math.round(resto/nmens*100)/100 : 0;
+    if(document.getElementById('pe-mens')) document.getElementById('pe-mens').value = mens||'';
+    el.style.display='block';
+    el.innerHTML = `${fmt(total)} − ${fmt(anticipo)} = <strong>${fmt(resto)}</strong> ÷ ${nmens} = <strong>${fmt(mens)}/mes</strong>`;
+  } else { el.style.display='none'; }
+}
+
+async function guardarPerfil() {
+  const id = perfilPacienteId;
+  if(!id) return;
+  const tipo = document.getElementById('pe-tipo').value;
+  const total = parseFloat(document.getElementById('pe-total').value)||0;
+  const anticipo = tipo==='mensual'?parseFloat(document.getElementById('pe-anticipo').value)||0:0;
+  const nmens = tipo==='mensual'?parseInt(document.getElementById('pe-nmens').value)||0:0;
+  const resto = Math.max(0,total-anticipo);
+  const mensualidad = tipo==='mensual'&&nmens>0?Math.round(resto/nmens*100)/100:0;
+  const pagadas = tipo==='mensual'?parseInt(document.getElementById('pe-pagadas').value)||0:0;
+  const primer_pago = tipo==='contado2'?parseFloat(document.getElementById('pe-primer').value)||0:0;
+  const segundo_pago = tipo==='contado2'?parseFloat(document.getElementById('pe-segundo').value)||0:0;
+
+  const payload = {
+    aparatologia: document.getElementById('pe-apar').value||null,
+    fecha_inicio: document.getElementById('pe-fecha').value||null,
+    duracion_meses: parseInt(document.getElementById('pe-dur').value)||null,
+    ultima_visita: document.getElementById('pe-ultima').value||null,
+    tipo_pago: tipo,
+    total, anticipo, mensualidad, n_mensualidades: nmens,
+    mensualidades_pagadas_inicio: pagadas,
+    estado_pago: document.getElementById('pe-estado').value,
+    primer_pago, segundo_pago
+  };
+
+  try {
+    await sb('PATCH', `pacientes?id=eq.${id}`, payload);
+    showFlash('✓ Cambios guardados');
+    loadActivos(); loadDashboard();
+    // Refresh perfil
+    openPerfil(id);
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+async function renderPerfilPagos() {
+  const id = perfilPacienteId;
+  const el = document.getElementById('perfil-pagos');
+  el.innerHTML = '<div class="loading"><span class="spin"></span></div>';
+  try {
+    const pagos = await sb('GET', `pagos?paciente_id=eq.${id}&order=fecha.desc`);
+    if(!pagos.length) {
+      el.innerHTML = '<div style="font-size:13px;color:var(--text3);padding:8px 0">Sin pagos registrados.</div>';
+      return;
+    }
+    const total = pagos.reduce((s,pg)=>s+pg.monto,0);
+    el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr>
+        <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase">Fecha</th>
+        <th style="text-align:right;padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase">Monto</th>
+        <th style="padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase">Nota</th>
+        <th style="padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase"></th>
+      </tr></thead>
+      <tbody>
+      ${pagos.map(pg=>`<tr>
+        <td style="padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text2)">${pg.fecha}</td>
+        <td style="padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;font-weight:500;font-family:var(--mono)">${fmt(pg.monto)}</td>
+        <td style="padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text3);font-size:12px">${pg.nota||'—'}</td>
+        <td style="padding:7px 8px;border-bottom:1px solid var(--border)"><button class="btn btn-danger btn-icon" style="font-size:11px" onclick="eliminarPago('${pg.id}')">🗑</button></td>
+      </tr>`).join('')}
+      <tr style="background:var(--surface2)">
+        <td style="padding:7px 8px;font-weight:600">Total</td>
+        <td style="padding:7px 8px;text-align:right;font-weight:600;font-family:var(--mono)">${fmt(total)}</td>
+        <td colspan="2"></td>
+      </tr>
+      </tbody></table>`;
+  } catch(e) { el.innerHTML = `<div class="empty">Error: ${e.message}</div>`; }
+}
+
+async function agregarPagoPerfil() {
+  const id = perfilPacienteId;
+  const fecha = document.getElementById('pp-fecha').value;
+  const monto = parseFloat(document.getElementById('pp-monto').value);
+  const nota = document.getElementById('pp-nota').value.trim();
+  if(!monto) { alert('Ingresa el monto'); return; }
+  try {
+    await sb('POST','pagos',{paciente_id:id,fecha,monto,nota:nota||null});
+    document.getElementById('pp-monto').value='';
+    document.getElementById('pp-nota').value='';
+    showFlash('✓ Pago registrado');
+    renderPerfilPagos();
+    loadDashboard();
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+async function eliminarPago(pagoId) {
+  if(!confirm('¿Eliminar este pago? No se puede deshacer.')) return;
+  try {
+    await sb('DELETE', `pagos?id=eq.${pagoId}`);
+    showFlash('Pago eliminado');
+    renderPerfilPagos();
+    loadDashboard();
+  } catch(e) { alert('Error: '+e.message); }
+}
+
+async function renderPerfilVisitas() {
+  const id = perfilPacienteId;
+  const el = document.getElementById('perfil-visitas');
+  el.innerHTML = '<div class="loading"><span class="spin"></span></div>';
+  try {
+    const visitas = await sb('GET', `visitas?paciente_id=eq.${id}&order=fecha.desc`);
+    if(!visitas.length) {
+      el.innerHTML = '<div style="font-size:13px;color:var(--text3);padding:8px 0">Sin visitas registradas.</div>';
+      return;
+    }
+    el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr>
+        <th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase">Fecha</th>
+        <th style="padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase">Nota</th>
+        <th style="padding:6px 8px;border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);text-transform:uppercase"></th>
+      </tr></thead>
+      <tbody>${visitas.map(v=>`<tr>
+        <td style="padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text2)">${v.fecha}</td>
+        <td style="padding:7px 8px;border-bottom:1px solid var(--border);color:var(--text3);font-size:12px">${v.nota||'—'}</td>
+        <td style="padding:7px 8px;border-bottom:1px solid var(--border)"><button class="btn btn-danger btn-icon" style="font-size:11px" onclick="eliminarVisita('${v.id}')">🗑</button></td>
+      </tr>`).join('')}</tbody>
+    </table>
+    <div style="font-size:12px;color:var(--text3);margin-top:8px">${visitas.length} visitas registradas</div>`;
+  } catch(e) { el.innerHTML = `<div class="empty">Error: ${e.message}</div>`; }
+}
+
+async function eliminarVisita(visitaId) {
+  if(!confirm('¿Eliminar esta visita?')) return;
+  try {
+    await sb('DELETE', `visitas?id=eq.${visitaId}`);
+    showFlash('Visita eliminada');
+    renderPerfilVisitas();
+  } catch(e) { alert('Error: '+e.message); }
 }
 
 // ─── MES KPI ──────────────────────────────────────────────
@@ -2040,35 +2188,56 @@ init();
 </script>
 <!-- MODAL PERFIL PACIENTE -->
 <div class="overlay" id="modal-perfil">
-<div class="modal" style="max-width:680px">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
-    <div class="modal-title" id="perfil-nombre" style="margin:0"></div>
-    <button class="btn btn-ghost btn-icon" onclick="closeOverlay('modal-perfil')" style="font-size:16px">✕</button>
+<div class="modal" style="max-width:740px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+    <div class="modal-title" id="perfil-nombre" style="margin:0;font-size:16px"></div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="btn btn-checkin btn-icon" id="perfil-btn-checkin" onclick="">✓ Check-in</button>
+      <button class="btn btn-ghost btn-icon" onclick="closeOverlay('modal-perfil')" style="font-size:16px">✕</button>
+    </div>
   </div>
 
-  <!-- Info general -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem" id="perfil-info"></div>
+  <!-- Tabs -->
+  <div style="display:flex;gap:3px;background:var(--surface2);border-radius:var(--r-sm);padding:3px;width:fit-content;margin-bottom:1.25rem">
+    <button class="tab active" id="ptab-info" onclick="perfilTab('info')">Información</button>
+    <button class="tab" id="ptab-pagos" onclick="perfilTab('pagos')">Pagos</button>
+    <button class="tab" id="ptab-visitas" onclick="perfilTab('visitas')">Visitas</button>
+  </div>
 
-  <!-- Progreso tratamiento -->
-  <div style="background:var(--surface2);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:1.25rem" id="perfil-progreso"></div>
+  <!-- Tab: Información -->
+  <div id="perfil-tab-info">
+    <div id="perfil-progreso" style="background:var(--surface2);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:1rem"></div>
+    <div class="sect">Datos del tratamiento</div>
+    <div class="form-grid" id="perfil-form-trat"></div>
+    <div class="sect">Datos de pago</div>
+    <div class="form-grid" id="perfil-form-pago"></div>
+    <div class="calc-box" id="perfil-calc"></div>
+    <div style="display:flex;gap:8px;margin-top:1rem">
+      <button class="btn btn-primary" onclick="guardarPerfil()">Guardar cambios</button>
+    </div>
+  </div>
 
-  <!-- Historial pagos -->
-  <div style="margin-bottom:1.25rem">
-    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">Historial de pagos</div>
+  <!-- Tab: Pagos -->
+  <div id="perfil-tab-pagos" style="display:none">
+    <!-- Agregar pago -->
+    <div style="background:var(--surface2);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:1rem">
+      <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px">Registrar nuevo pago</div>
+      <div class="form-grid">
+        <div class="fg"><label>Fecha</label><input type="date" id="pp-fecha"/></div>
+        <div class="fg"><label>Monto ($)</label><input type="number" id="pp-monto" min="0" placeholder="Ej. 1,354"/></div>
+        <div class="fg form-full"><label>Nota (opcional)</label><input type="text" id="pp-nota" placeholder="Efectivo, transferencia..."/></div>
+      </div>
+      <button class="btn btn-primary" onclick="agregarPagoPerfil()" style="margin-top:6px">+ Agregar pago</button>
+    </div>
+    <!-- Historial -->
     <div id="perfil-pagos"><div class="loading"><span class="spin"></span></div></div>
   </div>
 
-  <!-- Historial visitas -->
-  <div>
-    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">Historial de visitas</div>
+  <!-- Tab: Visitas -->
+  <div id="perfil-tab-visitas" style="display:none">
     <div id="perfil-visitas"><div class="loading"><span class="spin"></span></div></div>
   </div>
 
-  <div class="modal-actions" style="margin-top:1.25rem">
-    <button class="btn btn-primary" id="perfil-btn-pago" onclick="" style="display:none">💰 Registrar pago</button>
-    <button class="btn btn-checkin" id="perfil-btn-checkin" onclick="">✓ Check-in</button>
-    <button class="btn btn-ghost" onclick="closeOverlay('modal-perfil')">Cerrar</button>
-  </div>
 </div>
 </div>
 
