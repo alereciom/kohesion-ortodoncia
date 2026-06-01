@@ -744,7 +744,9 @@ async function loadDashboard() {
     const deudaInicial = activos.filter(p=>p.estado_pago==='pendiente').reduce((s,p)=>s+(p.tipo_pago==='contado'?p.total:p.tipo_pago==='contado2'?p.total:(p.anticipo||0)),0);
     // Cobrado en mensualidades este mes
     const mesDash = today().slice(0,7);
-    const allPagos = await sb('GET',`pagos?fecha=gte.${mesDash}-01&fecha=lte.${mesDash}-31&select=monto,paciente_id`);
+    const [dy,dm] = mesDash.split('-').map(Number);
+    const nextMonth = new Date(dy, dm, 1).toISOString().slice(0,10);
+    const allPagos = await sb('GET',`pagos?fecha=gte.${mesDash}-01&fecha=lt.${nextMonth}&select=monto,paciente_id`);
     // Only count pagos from mensual patients
     const activoIds = new Set(activos.filter(p=>p.tipo_pago==='mensual').map(p=>p.id));
     const cobradoMensMes = allPagos.filter(p=>activoIds.has(p.paciente_id)).reduce((s,p)=>s+p.monto,0);
@@ -971,7 +973,9 @@ async function loadActivosMes() {
   document.getElementById('tbl-activos').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
   try {
     const mesHoy = new Date().toISOString().slice(0,7);
-    const data = await sb('GET',`v_resumen?fecha_inicio=gte.${mesHoy}-01&fecha_inicio=lte.${mesHoy}-31&status=neq.incompleto&order=fecha_inicio.desc`);
+    const [hy,hm] = mesHoy.split('-').map(Number);
+    const nextMonthH = new Date(hy, hm, 1).toISOString().slice(0,10);
+    const data = await sb('GET',`v_resumen?fecha_inicio=gte.${mesHoy}-01&fecha_inicio=lt.${nextMonthH}&status=neq.incompleto&order=fecha_inicio.desc`);
     if(!data.length){
       document.getElementById('tbl-activos').innerHTML='<div class="empty"><div class="empty-icon">📋</div>No hay contratos nuevos este mes.</div>';
       document.getElementById('pag-activos').innerHTML=`<span style="color:var(--text3);font-size:12px">Contratos de ${mesHoy} — 0 registros</span>`;
