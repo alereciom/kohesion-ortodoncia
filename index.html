@@ -612,20 +612,17 @@ function pagosEsperados(p) {
 }
 function totalCobradoReal(p) {
   const pagosRegistrados = p.total_cobrado||0;
-  // mensualidades_pagadas_inicio already counted separately, not in pagos table
-  const pagosInicio = (p.mensualidades_pagadas_inicio||0)*(p.mensualidad||0);
+  // All payments are now in pagos table (including historical ones inserted automatically)
   // Anticipo: only add if NOT already in pagos
   const anticipoPagado = (p.anticipo||0) > 0 && p.estado_pago==='pagado' && pagosRegistrados===0 ? (p.anticipo||0) : 0;
   // For contado, if estado_pago=pagado count full total as cobrado (unless pagos registered)
   const contadoPagado = p.tipo_pago==='contado' && p.estado_pago==='pagado' && pagosRegistrados===0 ? p.total : 0;
-  // contado2: primer pago + segundo si ya pasaron 30 días y está registrado
-  const contado2Cobrado = p.tipo_pago==='contado2' && pagosRegistrados===0
-    ? (p.primer_pago||0) // at minimum first payment if made
-    : 0;
-  return pagosRegistrados + pagosInicio + anticipoPagado + contadoPagado + contado2Cobrado;
+  // contado2: primer pago if no pagos registered
+  const contado2Cobrado = p.tipo_pago==='contado2' && pagosRegistrados===0 ? (p.primer_pago||0) : 0;
+  return pagosRegistrados + anticipoPagado + contadoPagado + contado2Cobrado;
 }
 function saldo(p) { return Math.max(0,p.total-totalCobradoReal(p)); }
-function numPagosTotal(p) { return (p.num_pagos||0)+(p.mensualidades_pagadas_inicio||0); }
+function numPagosTotal(p) { return (p.num_pagos||0); }
 
 function segmento(p) {
   if (!p.fecha_inicio) return 'incompleto';
@@ -1102,8 +1099,8 @@ async function loadMens() {
       const cobrado=totalCobradoReal(p);
       if(fe==='liquidado') return cobrado>=p.total;
       const esp=pagosEsperados(p);
-      if(fe==='aldia') return cobrado>=esp*0.9 && cobrado<p.total;
-      if(fe==='atraso') return cobrado<esp*0.9;
+      if(fe==='aldia') return cobrado>=esp && cobrado<p.total;
+      if(fe==='atraso') return cobrado<esp;
       return true;
     });
 
@@ -1708,9 +1705,9 @@ async function loadCobranza() {
 
     // Filter only those with actual debt
     const deudores = data.filter(p => {
-      const cobrado = p.total_cobrado||0;
+      const cobrado = totalCobradoReal(p);
       const esp = pagosEsperados(p);
-      return cobrado < esp*0.9;
+      return cobrado < esp;
     });
 
     if(!deudores.length){
