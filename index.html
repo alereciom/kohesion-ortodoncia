@@ -738,7 +738,7 @@ async function loadDashboard() {
 
     const carteraTotal = activos.reduce((s,p)=>s+p.total,0);
     const ingMens = activos.filter(p=>p.tipo_pago==='mensual').reduce((s,p)=>s+(p.mensualidad||0),0);
-    const deudaInicial = activos.filter(p=>p.estado_pago==='pendiente').reduce((s,p)=>s+(p.tipo_pago==='contado'?p.total:p.tipo_pago==='contado2'?p.total:(p.anticipo||0)),0);
+    const deudaInicial = activos.filter(p=>p.estado_pago==='pendiente').reduce((s,p)=>s+p.total,0);
     // Cobrado en mensualidades este mes
     const mesDash = today().slice(0,7);
     const [dy,dm] = mesDash.split('-').map(Number);
