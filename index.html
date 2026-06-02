@@ -924,6 +924,8 @@ function goCartera() {
 }
 
 function goAnticipos() {
+  // Set a flag so loadActivos knows not to overwrite
+  window._pendientesMode = true;
   document.querySelectorAll('.nav-btn')[1].click();
   setTimeout(()=>{
     document.getElementById('f-segmento').value='';
@@ -933,6 +935,7 @@ function goAnticipos() {
     searches.activos='';
     pages.activos=1;
     loadActivosPendientes();
+    setTimeout(()=>{ window._pendientesMode = false; }, 1000);
   },50);
 }
 
@@ -1002,6 +1005,7 @@ function goSeg(s) {
 
 // ─── ACTIVOS ──────────────────────────────────────────────
 async function loadActivos() {
+  if(window._pendientesMode) return;
   document.getElementById('tbl-activos').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
   try {
     let q=`v_resumen?status=eq.activo&order=apellido_paterno.asc`;
