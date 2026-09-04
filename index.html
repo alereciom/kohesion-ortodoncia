@@ -279,6 +279,7 @@ tr.row-incomplete td:first-child{color:var(--text);}
         <option value="alineadores_aw">Alineadores AW</option>
         <option value="alineadores_orec">Alineadores OREC</option>
       </select>
+      <button class="btn btn-ghost" onclick="exportarActivos()" title="Descargar en CSV la lista tal como está filtrada">⬇ Exportar CSV</button>
       <button class="btn btn-primary" onclick="openNuevo()">+ Nuevo paciente</button>
     </div>
     <div id="tbl-activos"><div class="loading"><span class="spin"></span>Cargando...</div></div>
@@ -943,6 +944,7 @@ async function loadActivosPendientes() {
   document.getElementById('tbl-activos').innerHTML='<div class="loading"><span class="spin"></span>Cargando...</div>';
   try {
     const data = await sb('GET','v_resumen?status=eq.activo&estado_pago=eq.pendiente&order=apellido_paterno.asc');
+    window._exportRows = data;
     if(!data.length){
       document.getElementById('tbl-activos').innerHTML='<div class="empty"><div class="empty-icon">✅</div>No hay anticipos pendientes.</div>';
       document.getElementById('pag-activos').innerHTML='';
@@ -976,6 +978,7 @@ async function loadActivosMes() {
     const [hy,hm] = mesHoy.split('-').map(Number);
     const nextMonthH = new Date(hy, hm, 1).toISOString().slice(0,10);
     const data = await sb('GET',`v_resumen?fecha_inicio=gte.${mesHoy}-01&fecha_inicio=lt.${nextMonthH}&status=neq.incompleto&order=fecha_inicio.desc`);
+    window._exportRows = data;
     if(!data.length){
       document.getElementById('tbl-activos').innerHTML='<div class="empty"><div class="empty-icon">📋</div>No hay contratos nuevos este mes.</div>';
       document.getElementById('pag-activos').innerHTML=`<span style="color:var(--text3);font-size:12px">Contratos de ${mesHoy} — 0 registros</span>`;
@@ -1020,6 +1023,7 @@ async function loadActivos() {
 
     const fs=document.getElementById('f-segmento')?.value||'';
     if(fs) data=data.filter(p=>segmento(p)===fs);
+    window._exportRows = data;
 
     if(!data.length) {
       document.getElementById('tbl-activos').innerHTML='<div class="empty"><div class="empty-icon">👤</div>No se encontraron pacientes.</div>';
@@ -1086,6 +1090,67 @@ function renderTablaActivos(rows) {
       </tr>`;
     }).join('')}</tbody>
   </table></div>`;
+}
+
+// ─── EXPORTAR CSV ─────────────────────────────────────────
+const APAR_LABEL = {
+  primera_fase:'Primera fase', brackets_metalicos:'Brackets metálicos',
+  brackets_ceramicos:'Brackets cerámicos', alineadores_aw:'Alineadores AW',
+  alineadores_orec:'Alineadores OREC'
+};
+const TIPO_LABEL = { contado:'Contado', contado2:'Contado 2 pagos', mensual:'Mensualidades' };
+
+function csvCell(v) {
+  if (v === null || v === undefined) return '';
+  const s = String(v);
+  return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+
+function exportarActivos() {
+  const rows = window._exportRows || [];
+  if (!rows.length) { showFlash('No hay pacientes en la lista para exportar'); return; }
+
+  const head = ['Nombre','Apellido paterno','Apellido materno','Teléfono','Segmento',
+    'Aparatología','Forma de pago','Fecha de inicio','Duración (meses)','Mes de tratamiento',
+    'Meses restantes','Avance (%)','Última visita','Días sin visita','Total tratamiento',
+    'Cobrado','Saldo','Mensualidad','Mensualidades pagadas','Mensualidades contratadas',
+    'Estado del pago inicial'];
+
+  const body = rows.map(p => {
+    const cobrado = totalCobradoReal(p), sd = saldo(p);
+    const ultima  = p.ultima_visita_real || p.ultima_visita || '';
+    const dias    = ultima ? diffDays(ultima, today()) : '';
+    const mes     = p.fecha_inicio ? monthsElapsed(p.fecha_inicio) + 1 : '';
+    const ml      = p.fecha_inicio ? monthsLeft(p.fecha_inicio, p.duracion_meses || 18) : '';
+    const pct     = p.fecha_inicio ? progPct(p.fecha_inicio, p.duracion_meses || 18) : '';
+    const seg     = segmento(p);
+    return [
+      p.nombre || '', p.apellido_paterno || '', p.apellido_materno || '', p.telefono || '',
+      SEG_LABEL[seg] || seg,
+      APAR_LABEL[p.aparatologia] || p.aparatologia || '',
+      TIPO_LABEL[p.tipo_pago] || p.tipo_pago || '',
+      p.fecha_inicio || '', p.duracion_meses || '', mes, ml, pct,
+      ultima, dias,
+      Math.round(p.total || 0), Math.round(cobrado), Math.round(sd),
+      p.tipo_pago === 'mensual' ? Math.round(p.mensualidad || 0) : '',
+      p.tipo_pago === 'mensual' ? numPagosTotal(p) : '',
+      p.tipo_pago === 'mensual' ? (p.n_mensualidades || '') : '',
+      p.estado_pago === 'pagado' ? 'Pagado' : 'Pendiente'
+    ];
+  });
+
+  const csv  = [head].concat(body).map(r => r.map(csvCell).join(',')).join('\r\n');
+  const blob = new Blob(['\ufeff' + csv], { type:'text/csv;charset=utf-8;' });
+  const fs   = document.getElementById('f-segmento')?.value || '';
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = 'pacientes-activos' + (fs ? '-' + fs : '') + '-' + today() + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showFlash(rows.length + ' pacientes exportados');
 }
 
 // ─── MENSUALIDADES ────────────────────────────────────────
